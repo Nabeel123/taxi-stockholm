@@ -159,6 +159,7 @@ export default function BookingForm({
 
   const shouldCalculateDistance =
     serviceType !== "city-tour" &&
+    serviceType !== "custom-route" &&
     debouncedPickup.trim().length >= 3 &&
     debouncedDropoff.trim().length >= 3;
 
@@ -213,7 +214,7 @@ export default function BookingForm({
 
   return (
     <div className={shake ? "animate-shake" : ""}>
-      <Wizard header={<WizardHeader />}>
+      <Wizard header={serviceType === "custom-route" ? null : <WizardHeader />}>
         <Step1Details
           register={register}
           control={control}
@@ -229,6 +230,7 @@ export default function BookingForm({
           packageDisplayName={packageDisplayName ?? ""}
           service={service}
           onInvalid={onInvalid}
+          onCustomRouteComplete={handlePaymentComplete}
         />
         <Step2Payment
           getValues={getValues}
@@ -261,6 +263,7 @@ type Step1Props = {
   packageDisplayName: string;
   service: { id?: string; name?: string; displayName?: string } | undefined;
   onInvalid: () => void;
+  onCustomRouteComplete: () => void;
 };
 
 function Step1Details({
@@ -278,8 +281,9 @@ function Step1Details({
   packageDisplayName,
   service,
   onInvalid,
+  onCustomRouteComplete,
 }: Step1Props) {
-  const { nextStep } = useWizard();
+  const { nextStep, goToStep } = useWizard();
   const [isValidating, setIsValidating] = useState(false);
 
   const onNext = async () => {
@@ -287,11 +291,17 @@ function Step1Details({
     const valid = await trigger();
     const distanceOk =
       serviceType === "city-tour" ||
+      serviceType === "custom-route" ||
       distanceState.distanceKm === null ||
       distanceState.withinLimit;
     setIsValidating(false);
     if (valid && distanceOk) {
-      nextStep();
+      if (serviceType === "custom-route") {
+        onCustomRouteComplete(); // Run completion logic (no payment step)
+        goToStep(2); // Skip Payment, go directly to Confirm
+      } else {
+        nextStep();
+      }
     } else {
       onInvalid();
     }
@@ -321,7 +331,7 @@ function Step1Details({
 
         {/* Form content */}
         <div className="px-5 py-5 sm:px-6 sm:py-6">
-          {serviceType !== "city-tour" && (
+          {serviceType !== "city-tour" && serviceType !== "custom-route" && (
             <div className="mb-6 rounded-lg border-2 border-[var(--accent)]/60 bg-[var(--accent)]/5 p-4 ring-1 ring-[var(--accent)]/20">
               <div className="flex items-center gap-2 text-sm font-semibold text-[var(--accent)]">
                 <MapPin className="h-4 w-4 text-[var(--accent)]" />
@@ -516,12 +526,12 @@ function Step1Details({
             {errors.dropoffLocation && (
               <p className="mt-3 block min-h-[1.5rem] text-left text-sm leading-relaxed text-red-500">{errors.dropoffLocation.message}</p>
             )}
-            {(serviceType === "airport-pickup" || serviceType === "custom-route") && !distanceState.withinLimit && distanceState.distanceKm !== null && (
+            {serviceType === "airport-pickup" && !distanceState.withinLimit && distanceState.distanceKm !== null && (
               <p className="mt-3 block min-h-[1.5rem] text-left text-xs leading-relaxed text-red-400">
                 Distance {distanceState.distanceKm} km exceeds {MAX_DISTANCE_KM} km limit. Please contact us for longer journeys.
               </p>
             )}
-            {(serviceType === "airport-pickup" || serviceType === "custom-route") && distanceState.withinLimit && distanceState.distanceKm !== null && !distanceState.loading && (
+            {serviceType === "airport-pickup" && distanceState.withinLimit && distanceState.distanceKm !== null && !distanceState.loading && (
               <p className="mt-3 block min-h-[1.5rem] text-left text-sm leading-relaxed text-green-500">
                 ✓ Dropoff within service area ({distanceState.distanceKm} km from airport)
               </p>
@@ -547,6 +557,7 @@ function Step1Details({
           onClick={onNext}
           disabled={
             serviceType !== "city-tour" &&
+            serviceType !== "custom-route" &&
             distanceState.distanceKm !== null &&
             !distanceState.withinLimit
           }
@@ -557,6 +568,8 @@ function Step1Details({
               <Loader2 className="h-5 w-5 animate-spin" />
               Validating...
             </span>
+          ) : serviceType === "custom-route" ? (
+            "Request Quote →"
           ) : (
             "Next → Payment"
           )}
@@ -762,7 +775,7 @@ function Step3Confirmation({
   packageDisplayName: string;
   service?: (typeof SERVICES)[number];
 }) {
-  const { previousStep } = useWizard();
+  const { previousStep, goToStep } = useWizard();
   const data = getValues();
   const confettiFiredRef = useRef(false);
 
@@ -778,6 +791,8 @@ function Step3Confirmation({
     };
   }, []);
 
+  const isCustomRoute = data.serviceType === "custom-route";
+
   return (
     <div className="mt-6">
       <motion.div
@@ -786,10 +801,21 @@ function Step3Confirmation({
         className="rounded-xl border border-neutral-700 bg-neutral-800/50 p-6 text-center"
       >
         <CheckCircle className="mx-auto h-16 w-16 text-green-500" />
-        <h3 className="mt-4 text-xl font-semibold text-white">Booking Confirmed!</h3>
-        <p className="mt-2 text-white/60">
-          We&apos;ve received your booking. You&apos;ll receive a confirmation email shortly.
-        </p>
+        {isCustomRoute ? (
+          <>
+            <h3 className="mt-4 text-xl font-semibold text-white">Quote Request Received!</h3>
+            <p className="mt-2 text-white/80">
+              We will send you the quote on email or text message.
+            </p>
+          </>
+        ) : (
+          <>
+            <h3 className="mt-4 text-xl font-semibold text-white">Booking Confirmed!</h3>
+            <p className="mt-2 text-white/60">
+              We&apos;ve received your booking. You&apos;ll receive a confirmation email shortly.
+            </p>
+          </>
+        )}
 
         <div className="mt-6 rounded-lg border border-neutral-700 bg-neutral-900/50 p-4 text-left">
           <p className="text-sm font-medium text-white/80">Booking Summary</p>
@@ -801,13 +827,15 @@ function Step3Confirmation({
             <p>Time: {data.pickupTime || "—"}</p>
             <p>Passengers: {data.passengers || "—"}</p>
           </div>
-          <p className="mt-3 text-lg font-bold text-[var(--accent)]">Total: {packagePrice}</p>
+          {!isCustomRoute && (
+            <p className="mt-3 text-lg font-bold text-[var(--accent)]">Total: {packagePrice}</p>
+          )}
         </div>
 
         <div className="mt-6 flex gap-3">
           <button
             type="button"
-            onClick={() => previousStep()}
+            onClick={() => (isCustomRoute ? goToStep(0) : previousStep())}
             className="flex-1 rounded-lg border border-neutral-600 py-2.5 font-medium text-white hover:bg-neutral-800"
           >
             ← Back
