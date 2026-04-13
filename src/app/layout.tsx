@@ -45,7 +45,7 @@ export default function RootLayout({
                 gtag('config', '${GA_MEASUREMENT_ID}');
               `}
             </Script>
-          </> 
+          </>
         ) : null}
         {children}
       </body>
