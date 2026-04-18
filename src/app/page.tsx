@@ -4,7 +4,6 @@ import BookYourRide from "@/components/BookYourRide";
 import Testimonials from "@/components/Testimonials";
 import AboutOperations from "@/components/AboutOperations";
 import CTASection from "@/components/CTASection";
-import MapSection from "@/components/MapSection";
 import Footer from "@/components/Footer";
 
 export default function Home() {
@@ -13,11 +12,10 @@ export default function Home() {
       <Header />
       <main className="w-full min-w-0">
         <Hero />
-        <BookYourRide />
-        <CTASection />
-        <Testimonials />
         <AboutOperations />
-        <MapSection />
+        <CTASection />
+        <BookYourRide />
+        <Testimonials />
         <Footer />
       </main>
     </div>

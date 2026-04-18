@@ -5,9 +5,9 @@ import { usePathname } from "next/navigation";
 import { Phone, MapPin, Share2, ThumbsUp, Mail } from "lucide-react";
 
 const quickLinks = [
+  { href: "/#about", label: "About" },
   { href: "/#services", label: "Services" },
   { href: "/#reviews", label: "Reviews" },
-  { href: "/#about", label: "About" },
   { href: "/#contact", label: "Contact" },
 ];
 
@@ -23,7 +23,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-[var(--dark-slate)] py-14 sm:py-16">
+    <footer id="contact" className="bg-[var(--dark-slate)] py-14 sm:py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
           <div className="lg:col-span-2">

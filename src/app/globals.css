@@ -3,15 +3,24 @@
 @import "react-datepicker/dist/react-datepicker.css";
 
 :root {
-  --background: #1e293b;
-  --foreground: #ffffff;
-  --accent: #facc15;
-  --accent-hover: #eab308;
-  --primary-blue: #2563eb;
-  --primary-blue-hover: #1d4ed8;
+  /* Brand theme: primary navy, black/white neutrals, yellow accent */
+  --primary: #14213d;
+  --secondary: #000000;
+  --surface: #ffffff;
+
+  --background: var(--primary);
+  --foreground: var(--surface);
+  --accent: #ffd60a;
+  --accent-hover: #e6bd00;
+
+  --primary-blue: var(--primary);
+  --primary-blue-hover: #0f1729;
   --whatsapp-green: #22c55e;
   --whatsapp-green-hover: #16a34a;
-  --dark-slate: #1e293b;
+  --dark-slate: var(--primary);
+  /* Warm off-white (About + Services sections) */
+  --surface-warm: #fdfaf5;
+  --surface-warm-mid: #e8e4dc;
   /* Design system */
   --section-padding: 5rem;
   --container-max: 80rem;
@@ -24,6 +33,11 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-surface: var(--surface);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
   --font-sans: var(--font-roboto);
   --font-heading: var(--font-poppins);
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -97,15 +111,15 @@ body {
   animation: shake 0.5s ease-in-out;
 }
 
-/* Infinite yellow border pulse animation */
+/* Accent border pulse */
 @keyframes border-pulse {
   0%, 100% {
     border-color: var(--accent);
-    box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.4);
+    box-shadow: 0 0 0 0 rgb(255 214 10 / 0.4);
   }
   50% {
-    border-color: #fde047;
-    box-shadow: 0 0 12px 2px rgba(250, 204, 21, 0.25);
+    border-color: #ffec70;
+    box-shadow: 0 0 12px 2px rgb(255 214 10 / 0.25);
   }
 }
 

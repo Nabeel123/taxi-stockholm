@@ -63,7 +63,7 @@ function GoogleReviewBadge() {
 export default function Testimonials() {
   return (
     <section
-      className="relative scroll-mt-20 overflow-hidden bg-[#243047] py-16 sm:scroll-mt-24 sm:py-20 md:py-24"
+      className="relative overflow-hidden bg-[#243047] py-16 sm:py-20 md:py-24"
       id="reviews"
     >
       <div
@@ -71,12 +71,7 @@ export default function Testimonials() {
         aria-hidden
       />
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center"
-        >
+        <motion.div initial={{ opacity: 1, y: 0 }} className="text-center">
           <span className="font-heading inline-block rounded-full bg-[var(--accent)] px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-black sm:text-sm">
             Testimonials
           </span>
@@ -89,9 +84,7 @@ export default function Testimonials() {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-40px" }}
+          initial={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
           className="mx-auto mt-10 flex max-w-4xl flex-wrap justify-center gap-8 sm:mt-12 sm:gap-12 md:gap-16"
         >
@@ -120,9 +113,7 @@ export default function Testimonials() {
           {testimonials.map((t, i) => (
             <motion.div
               key={t.name}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
+              initial={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: i * 0.1 }}
               className="relative flex min-h-[300px] flex-col rounded-2xl border border-white/10 bg-[#1a2639]/90 p-6 shadow-lg backdrop-blur-sm sm:min-h-[280px] sm:p-8"
             >
