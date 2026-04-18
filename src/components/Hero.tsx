@@ -1,13 +1,34 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { MapPin, Phone, Star } from "lucide-react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
+import type { MastheadContent } from "@/lib/sanity/masthead";
 
-export default function Hero() {
+const PICKUP_PLACEHOLDER = "Pickup address";
+const DROPOFF_PLACEHOLDER = "Drop-off address";
+
+const TRUST_BADGES = ["5.0 rating", "1000+ rides", "Fixed prices"] as const;
+
+const CONTACT_PROMPT = "Prefer to talk?";
+const CALL_LABEL = "Call +46 700 123 456";
+const CALL_HREF = "tel:+46700123456";
+const WHATSAPP_LABEL = "WhatsApp";
+const WHATSAPP_HREF = "https://wa.me/46700123456";
+
+const BOOKING_CARD_TITLE = "Get a price in seconds";
+const PRIMARY_CTA_TEXT = "Get price";
+/** Used when masthead Background is “Image” (not configurable in CMS). */
+const HERO_BACKGROUND_IMAGE = "/masthead.jpg";
+
+type HeroProps = {
+  content: MastheadContent;
+};
+
+export default function Hero({ content }: HeroProps) {
   const router = useRouter();
   const [pickup, setPickup] = useState("");
   const [dropoff, setDropoff] = useState("");
@@ -24,26 +45,40 @@ export default function Hero() {
     router.prefetch("/book");
   }, [router]);
 
+  const isVideo = content.backgroundMode === "video" && Boolean(content.videoUrl?.trim());
+
   return (
     <section id="hero" className="relative flex min-h-screen flex-col justify-end overflow-hidden">
       <div className="absolute inset-0">
-        <div
-          className="absolute inset-0 bg-[var(--dark-slate)] md:hidden"
-          aria-hidden
-        />
-        <video
-          className="absolute inset-0 hidden h-full w-full object-cover object-center md:block"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          poster="/masthead.jpg"
-          aria-hidden
-        >
-          <source src="/masthead.mp4" type="video/mp4" />
-        </video>
-        {/* Light theme scrim: dark-slate + subtle accent warmth so copy stays readable */}
+        {isVideo ? (
+          <>
+            <div
+              className="absolute inset-0 bg-[var(--dark-slate)] md:hidden"
+              aria-hidden
+            />
+            <video
+              className="absolute inset-0 hidden h-full w-full object-cover object-center md:block"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              poster={content.posterUrl || undefined}
+              aria-hidden
+            >
+              {content.videoUrl ? (
+                <source src={content.videoUrl} type="video/mp4" />
+              ) : null}
+            </video>
+          </>
+        ) : (
+          <img
+            src={HERO_BACKGROUND_IMAGE}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover object-center"
+            aria-hidden
+          />
+        )}
         <div
           className="absolute inset-0 bg-[var(--dark-slate)]/30"
           aria-hidden
@@ -62,7 +97,7 @@ export default function Hero() {
             transition={{ duration: 0.5 }}
           >
             <span className="font-heading inline-block rounded-full bg-[var(--accent)] px-5 py-2 text-xs font-bold uppercase tracking-[0.15em] text-black sm:text-sm">
-              Premium Taxi Agency
+              {content.badgeText}
             </span>
           </motion.div>
           <motion.h1
@@ -71,9 +106,7 @@ export default function Hero() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="mt-6 text-3xl font-bold leading-[1.1] tracking-tight text-[var(--accent)] sm:text-4xl md:text-5xl lg:text-6xl"
           >
-            Reliable Rides,
-            <br />
-            Every Time.
+            {content.heading}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 16 }}
@@ -81,8 +114,7 @@ export default function Hero() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-white/95 sm:text-lg md:text-xl"
           >
-            Your trusted travel partner in Stockholm. Punctual, reliable, and professional chauffeur
-            services in our Tesla Model S 2024 fleet.
+            {content.subheading}
           </motion.p>
 
           <motion.div
@@ -93,21 +125,21 @@ export default function Hero() {
           >
             <p className="mb-3 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-white/80 sm:text-sm">
               <MapPin className="h-4 w-4 text-[var(--accent)]" />
-              Get a price in seconds
+              {BOOKING_CARD_TITLE}
             </p>
             <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
               <AddressAutocomplete
                 value={pickup}
                 onChange={setPickup}
-                placeholder="Pickup address"
-                aria-label="Pickup address"
+                placeholder={PICKUP_PLACEHOLDER}
+                aria-label={PICKUP_PLACEHOLDER}
                 className="w-full rounded-xl border border-white/20 bg-black/30 px-4 py-3 text-left text-base text-white placeholder-white/45 focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40"
               />
               <AddressAutocomplete
                 value={dropoff}
                 onChange={setDropoff}
-                placeholder="Drop-off address"
-                aria-label="Drop-off address"
+                placeholder={DROPOFF_PLACEHOLDER}
+                aria-label={DROPOFF_PLACEHOLDER}
                 className="w-full rounded-xl border border-white/20 bg-black/30 px-4 py-3 text-left text-base text-white placeholder-white/45 focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40"
               />
             </div>
@@ -115,7 +147,7 @@ export default function Hero() {
               href={priceHref}
               className="mt-4 flex w-full items-center justify-center rounded-xl bg-[var(--accent)] px-6 py-3.5 text-base font-bold uppercase tracking-wide text-black transition-all duration-300 ease-out hover:scale-[1.01] hover:bg-[var(--accent-hover)] hover:shadow-lg hover:shadow-[var(--accent)]/25"
             >
-              Get price
+              {PRIMARY_CTA_TEXT}
             </Link>
           </motion.div>
 
@@ -125,18 +157,21 @@ export default function Hero() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-white/90 sm:text-base"
           >
-            <span className="inline-flex items-center gap-1.5 font-medium">
-              <Star className="h-4 w-4 fill-[var(--accent)] text-[var(--accent)]" />
-              5.0 rating
-            </span>
-            <span className="hidden text-white/40 sm:inline" aria-hidden>
-              ·
-            </span>
-            <span className="font-medium">1000+ rides</span>
-            <span className="hidden text-white/40 sm:inline" aria-hidden>
-              ·
-            </span>
-            <span className="font-medium">Fixed prices</span>
+            {TRUST_BADGES.map((label, index) => (
+              <Fragment key={`${index}-${label}`}>
+                {index > 0 ? (
+                  <span className="hidden text-white/40 sm:inline" aria-hidden>
+                    ·
+                  </span>
+                ) : null}
+                <span className="inline-flex items-center gap-1.5 font-medium">
+                  {index === 0 ? (
+                    <Star className="h-4 w-4 fill-[var(--accent)] text-[var(--accent)]" />
+                  ) : null}
+                  {label}
+                </span>
+              </Fragment>
+            ))}
           </motion.div>
 
           <motion.div
@@ -146,17 +181,17 @@ export default function Hero() {
             className="mt-8 hidden items-center justify-center gap-3 lg:flex lg:flex-wrap"
           >
             <p className="w-full text-center text-xs font-medium uppercase tracking-wider text-white/55">
-              Prefer to talk?
+              {CONTACT_PROMPT}
             </p>
             <a
-              href="tel:+46700123456"
+              href={CALL_HREF}
               className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:border-white/40 hover:bg-white/15"
             >
               <Phone className="h-4 w-4 text-[var(--accent)]" strokeWidth={2} />
-              Call +46 700 123 456
+              {CALL_LABEL}
             </a>
             <a
-              href="https://wa.me/46700123456"
+              href={WHATSAPP_HREF}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-full border-2 border-[var(--whatsapp-green)] bg-[var(--whatsapp-green)]/20 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-[var(--whatsapp-green)]/30"
@@ -164,7 +199,7 @@ export default function Hero() {
               <svg className="h-4 w-4 shrink-0" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.151 1.03 7.045 2.903 1.894 1.903 2.903 4.375 2.903 7.034 0 5.45-4.436 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
               </svg>
-              WhatsApp
+              {WHATSAPP_LABEL}
             </a>
           </motion.div>
         </div>

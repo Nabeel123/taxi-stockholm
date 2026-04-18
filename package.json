@@ -6,10 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "studio": "cd backend && npm run dev",
+    "studio:build": "cd backend && npm run build",
+    "studio:deploy": "cd backend && npm run deploy"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@sanity/client": "^7.21.0",
     "canvas-confetti": "^1.9.4",
     "framer-motion": "^12.34.3",
     "lucide-react": "^0.575.0",
