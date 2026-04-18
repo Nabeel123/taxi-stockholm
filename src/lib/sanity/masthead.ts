@@ -1,4 +1,8 @@
+import { unstable_cache } from "next/cache";
 import { getSanityClient } from "@/lib/sanity/client";
+import { MASTHEAD_CACHE_TAG, MASTHEAD_REVALIDATE_SECONDS } from "@/lib/sanity/constants";
+
+export { MASTHEAD_CACHE_TAG, MASTHEAD_REVALIDATE_SECONDS } from "@/lib/sanity/constants";
 
 export type MastheadBackgroundMode = "video" | "image";
 
@@ -81,14 +85,25 @@ function mergeMasthead(doc: MastheadDoc): MastheadContent {
   };
 }
 
-export async function getMasthead(): Promise<MastheadContent> {
+async function loadMastheadFromSanity(): Promise<MastheadContent> {
   const sanity = getSanityClient();
   if (!sanity) return DEFAULT_MASTHEAD;
 
   try {
-    const doc = await sanity.fetch<MastheadDoc>(mastheadQuery);
+    const doc = await sanity.fetch<MastheadDoc>(mastheadQuery, {}, {
+      next: { revalidate: MASTHEAD_REVALIDATE_SECONDS },
+    });
     return mergeMasthead(doc);
   } catch {
     return DEFAULT_MASTHEAD;
   }
 }
+
+/**
+ * Cached masthead for SSG/ISR: deduped across the request, revalidated on interval,
+ * taggable for on-demand `revalidateTag`.
+ */
+export const getMasthead = unstable_cache(loadMastheadFromSanity, ["sanity-masthead-v1"], {
+  revalidate: MASTHEAD_REVALIDATE_SECONDS,
+  tags: [MASTHEAD_CACHE_TAG],
+});
