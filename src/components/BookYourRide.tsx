@@ -1,375 +1,535 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { motion } from "framer-motion";
-import { Plane, MapPin, Landmark, Clock, User, ShieldCheck, HelpCircle } from "lucide-react";
+import { useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Plane,
+  MapPin,
+  Landmark,
+  Check,
+  HelpCircle,
+  ShieldCheck,
+  type LucideIcon,
+} from "lucide-react";
 import { SERVICES } from "@/lib/constants";
-import AddressAutocomplete from "@/components/AddressAutocomplete";
+import type { ServiceId } from "@/lib/constants";
 
-const icons: Record<string, React.ComponentType<{ className?: string }>> = {
+const icons: Record<string, LucideIcon> = {
   "plane-arrival": Plane,
   "plane-departure": Plane,
   landmark: Landmark,
   "map-pin": MapPin,
 };
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.04, delayChildren: 0.05 },
-  },
+const WHATSAPP_DIGITS = "46700123456";
+const TEL_HREF = "+46700123456";
+
+const steps = [
+  { num: 1 as const, label: "Choose Service" },
+  { num: 2 as const, label: "Your Details" },
+  { num: 3 as const, label: "Confirm" },
+];
+
+type Step = 1 | 2 | 3;
+
+type FormState = {
+  fullName: string;
+  phone: string;
+  date: string;
+  time: string;
+  passengers: number;
+  notes: string;
 };
 
-const itemVariants = {
-  hidden: { opacity: 0, x: -8 },
-  visible: (i: number) => ({
-    opacity: 1,
-    x: 0,
-    transition: { duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] as const },
-  }),
+const initialForm: FormState = {
+  fullName: "",
+  phone: "",
+  date: "",
+  time: "",
+  passengers: 1,
+  notes: "",
 };
 
-function ServicePanelExtras({
-  selectedId,
-}: {
-  selectedId: string;
-}) {
-  if (selectedId === "airport-pickup" || selectedId === "airport-dropoff") {
-    return (
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        <div className="rounded-xl border border-neutral-800 bg-neutral-900/80 p-4">
-          <div className="flex items-start gap-3">
-            <HelpCircle className="mt-0.5 h-5 w-5 shrink-0 text-[var(--accent)]" />
-            <div>
-              <p className="text-sm font-semibold text-white">Will the driver wait for my flight?</p>
-              <p className="mt-1 text-sm leading-relaxed text-white/75">
-                Yes. We track arrivals and adjust pickup time if you&apos;re delayed — no extra stress
-                after landing.
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="rounded-xl border border-neutral-800 bg-neutral-900/80 p-4">
-          <div className="flex items-start gap-3">
-            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[var(--accent)]" />
-            <div>
-              <p className="text-sm font-semibold text-white">Fixed price guarantee</p>
-              <p className="mt-1 text-sm leading-relaxed text-white/75">
-                The price you see is what you pay — no surge pricing or hidden fees for airport
-                transfers.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+function buildWhatsAppMessage(
+  serviceId: ServiceId,
+  form: FormState,
+): string {
+  const service = SERVICES.find((s) => s.id === serviceId)!;
+  const lines = [
+    "🚖 Taxi Stockholm — booking request",
+    "",
+    `Service: ${service.name}`,
+    `Route / details: ${service.description}`,
+    `Price: ${service.priceLabel}`,
+    "",
+    `Name: ${form.fullName}`,
+    `Phone: ${form.phone}`,
+    `Date: ${form.date}`,
+    `Time: ${form.time}`,
+    `Passengers: ${form.passengers}`,
+  ];
+  if (form.notes.trim()) {
+    lines.push("", `Notes: ${form.notes.trim()}`);
   }
-  if (selectedId === "city-tour") {
-    return (
-      <div className="mt-6 rounded-xl border border-neutral-800 bg-neutral-900/80 p-4">
-        <div className="flex items-start gap-3">
-          <HelpCircle className="mt-0.5 h-5 w-5 shrink-0 text-[var(--accent)]" />
-          <div>
-            <p className="text-sm font-semibold text-white">Can we customize stops?</p>
-            <p className="mt-1 text-sm leading-relaxed text-white/75">
-              Tell us what you want to see — we&apos;ll tailor the route around your interests and
-              schedule.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  return lines.join("\n");
+}
+
+function StepIndicator({ step }: { step: Step }) {
   return (
-    <div className="mt-6 rounded-xl border border-neutral-800 bg-neutral-900/80 p-4">
-      <div className="flex items-start gap-3">
-        <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-[var(--accent)]" />
-        <div>
-          <p className="text-sm font-semibold text-white">Any pickup in Stockholm</p>
-          <p className="mt-1 text-sm leading-relaxed text-white/75">
-            Door-to-door service across the metro area — enter addresses for an instant quote.
-          </p>
-        </div>
+    <div className="mb-10 w-full px-1">
+      <div className="flex items-start justify-between gap-1 sm:gap-2">
+        {steps.map((s, i) => {
+          const isActive = step === s.num;
+          const isComplete = step > s.num;
+          return (
+            <div key={s.num} className="flex min-w-0 flex-1 items-start">
+              <div className="flex w-full flex-col items-center gap-2">
+                <div
+                  className={`relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold transition-colors sm:h-10 sm:w-10 ${
+                    isComplete
+                      ? "bg-[var(--accent)] text-[var(--book-wizard-text)]"
+                      : isActive
+                        ? "bg-[var(--accent)] text-[var(--book-wizard-text)] shadow-sm"
+                        : "border-2 border-neutral-300 bg-white text-neutral-400"
+                  }`}
+                >
+                  {isComplete ? (
+                    <Check className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" strokeWidth={2.5} />
+                  ) : (
+                    s.num
+                  )}
+                </div>
+                <span
+                  className={`max-w-[5.5rem] text-center text-[10px] font-semibold leading-tight sm:max-w-none sm:text-xs ${
+                    isActive
+                      ? "font-bold text-[var(--book-wizard-text)]"
+                      : isComplete
+                        ? "text-[var(--book-wizard-text)]/80"
+                        : "text-neutral-400"
+                  }`}
+                >
+                  {s.label}
+                </span>
+              </div>
+              {i < steps.length - 1 ? (
+                <div
+                  className="mx-0.5 mt-[1.125rem] h-px min-w-[12px] flex-1 self-start bg-neutral-300 sm:mx-1 sm:mt-5"
+                  aria-hidden
+                />
+              ) : null}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
 
+const inputClass =
+  "w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-[var(--book-wizard-text)] shadow-sm placeholder:text-neutral-400 focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/35 sm:text-base";
+
 export default function BookYourRide() {
-  const [selectedId, setSelectedId] = useState<string>("airport-pickup");
-  const [customPickup, setCustomPickup] = useState("");
-  const [customDest, setCustomDest] = useState("");
+  const [step, setStep] = useState<Step>(1);
+  const [selectedId, setSelectedId] = useState<ServiceId | null>(null);
+  const [form, setForm] = useState<FormState>(initialForm);
 
-  const selectedService = SERVICES.find((s) => s.id === selectedId) ?? SERVICES[0];
-  const IconComponent = icons[selectedService.icon] || MapPin;
-  const isCustomRoute = selectedId === "custom-route";
+  const selectedService = useMemo(
+    () => SERVICES.find((s) => s.id === selectedId) ?? null,
+    [selectedId],
+  );
 
-  const customRouteHref = (() => {
-    const params = new URLSearchParams();
-    params.set("service", "custom-route");
-    if (customPickup) params.set("pickup", customPickup);
-    if (customDest) params.set("dropoff", customDest);
-    return `/book?${params.toString()}`;
-  })();
+  const canProceedStep2 =
+    form.fullName.trim().length > 0 &&
+    form.phone.trim().length > 0 &&
+    form.date.length > 0 &&
+    form.time.length > 0;
+
+  const whatsappHref = useMemo(() => {
+    if (!selectedId) return "#";
+    const text = buildWhatsAppMessage(selectedId, form);
+    return `https://wa.me/${WHATSAPP_DIGITS}?text=${encodeURIComponent(text)}`;
+  }, [selectedId, form]);
+
+  const minDate = new Date().toISOString().split("T")[0];
 
   return (
     <section
-      className="overflow-hidden bg-[var(--surface-warm)] py-16 sm:py-20 md:py-24"
+      className="overflow-hidden bg-[var(--book-wizard-bg)] py-16 sm:py-20 md:py-24"
       id="services"
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35 }}
-          className="text-center"
-        >
-          <span className="font-heading inline-block rounded-full bg-[var(--accent)] px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-black sm:text-sm">
-            Services
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:max-w-4xl lg:px-8">
+        <div className="text-center">
+          <span className="font-heading inline-block rounded-full bg-[var(--accent)] px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-[var(--book-wizard-text)] sm:text-sm">
+            SERVICES
           </span>
-          <h2 className="mt-2 text-2xl font-bold text-[var(--dark-slate)] sm:text-3xl md:text-4xl">
+          <h2 className="mt-2 font-heading text-2xl font-bold text-[var(--book-wizard-text)] sm:text-3xl md:text-4xl">
             Book Your Ride
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-sm text-neutral-600 sm:text-base">
             Choose your service and get instant booking
           </p>
-        </motion.div>
+        </div>
 
-        <motion.div
-          variants={containerVariants}
-          initial="visible"
-          className="mt-8 grid gap-4 lg:mt-10 lg:grid-cols-[minmax(300px,320px)_1fr] lg:gap-6"
-        >
-          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap lg:flex-col">
-            {SERVICES.map((service, i) => {
-              const Icon = icons[service.icon] || MapPin;
-              const isSelected = selectedId === service.id;
-              const bookHref =
-                service.id === "custom-route"
-                  ? `/book?service=custom-route`
-                  : `/book?service=${service.id}`;
-              return (
-                <motion.div
-                  key={service.id}
-                  variants={itemVariants}
-                  custom={i}
-                  className={`flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border transition-all duration-200 ease-out sm:min-w-[calc(50%-0.25rem)] lg:min-w-0 ${
-                    isSelected
-                      ? "border-[var(--accent)] border-l-4 border-l-[var(--accent)] bg-neutral-800 shadow-lg shadow-black/20 ring-2 ring-[var(--accent)]/35"
-                      : "border-neutral-800 border-l-4 border-l-transparent bg-neutral-900 hover:border-neutral-600 hover:bg-neutral-900/95"
-                  }`}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setSelectedId(service.id)}
-                    className="group flex w-full min-w-0 flex-1 items-stretch gap-2 p-2.5 text-left sm:gap-3 sm:p-3"
-                  >
-                    <div
-                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors ${
-                        isSelected ? "bg-[var(--accent)]" : "bg-neutral-700"
-                      }`}
-                    >
-                      <Icon
-                        className={`h-4 w-4 sm:h-5 sm:w-5 ${
-                          isSelected ? "text-black" : "text-white/80"
+        <div className="mt-10 rounded-2xl border border-neutral-200/80 bg-white p-5 shadow-sm sm:p-8 md:p-10">
+          <StepIndicator step={step} />
+
+          <AnimatePresence mode="wait">
+            {step === 1 ? (
+              <motion.div
+                key="s1"
+                initial={{ opacity: 0, x: 16 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -12 }}
+                transition={{ duration: 0.22 }}
+              >
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  {SERVICES.map((service) => {
+                    const Icon = icons[service.icon] || MapPin;
+                    const isSelected = selectedId === service.id;
+                    return (
+                      <button
+                        key={service.id}
+                        type="button"
+                        onClick={() => setSelectedId(service.id)}
+                        className={`relative flex flex-col rounded-2xl border p-4 text-left shadow-sm transition-all sm:p-5 ${
+                          isSelected
+                            ? "border-2 border-[var(--accent)] bg-[var(--book-card-selected)] shadow-md"
+                            : "border border-neutral-200 bg-white hover:border-neutral-300"
                         }`}
-                      />
-                    </div>
-                    <div className="flex min-w-0 flex-1 flex-col">
-                      <div className="flex items-start justify-between gap-2">
-                        <h3
-                          className={`min-w-0 flex-1 text-xs font-semibold uppercase leading-snug tracking-wide sm:text-sm ${
-                            isSelected ? "text-white" : "text-white/90"
-                          }`}
-                        >
-                          {service.name}
-                        </h3>
+                      >
                         {service.popular ? (
-                          <span className="ml-1 inline-flex shrink-0 items-center rounded-full bg-emerald-500 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white shadow-sm sm:px-2.5 sm:py-1 sm:text-[10px]">
+                          <span className="absolute right-2 top-2 rounded-full bg-[var(--accent)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-[var(--book-wizard-text)] sm:right-3 sm:top-3 sm:text-[10px]">
                             Popular
                           </span>
                         ) : null}
-                      </div>
-                      <p
-                        className={`mt-1 line-clamp-2 text-[11px] leading-snug sm:text-xs ${
-                          isSelected ? "text-white/90" : "text-white/80"
-                        }`}
-                      >
-                        {service.description}
-                      </p>
-                      <p className="mt-2 text-xs font-bold text-[var(--accent)] sm:text-sm">
-                        {service.priceLabel}
-                      </p>
-                    </div>
-                  </button>
-                  <div className="mt-auto border-t border-neutral-800 bg-neutral-950/90 px-2.5 py-2.5 sm:px-3 sm:py-3">
-                    <Link
-                      href={bookHref}
-                      onClick={(e) => e.stopPropagation()}
-                      className="flex w-full items-center justify-center rounded-lg bg-[var(--accent)]/15 py-2.5 text-center text-xs font-bold uppercase tracking-wide text-[var(--accent)] transition-colors hover:bg-[var(--accent)] hover:text-black"
+                        <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--book-wizard-text)]">
+                          <Icon className="h-5 w-5" strokeWidth={1.75} />
+                        </div>
+                        <h3 className="pr-12 font-heading text-xs font-bold uppercase tracking-wide text-[var(--book-wizard-text)] sm:pr-14 sm:text-sm">
+                          {service.name}
+                        </h3>
+                        <p className="mt-2 text-[11px] leading-snug text-neutral-600 sm:text-xs">
+                          {service.description}
+                        </p>
+                        <p className="mt-3 text-sm font-bold text-[var(--book-wizard-text)] sm:text-base">
+                          {service.priceLabel}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {selectedId ? (
+                  <div className="mt-8 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setStep(2)}
+                      className="inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-6 py-3 text-sm font-bold uppercase tracking-wide text-[var(--book-wizard-text)] shadow-sm transition hover:bg-[var(--accent-hover)] sm:text-base"
                     >
-                      Book this service
-                    </Link>
+                      Next
+                      <span aria-hidden>→</span>
+                    </button>
                   </div>
-                </motion.div>
-              );
-            })}
-          </div>
+                ) : null}
+              </motion.div>
+            ) : null}
 
-          <div className="min-h-[360px] sm:min-h-[420px] lg:min-h-[460px]">
-            {isCustomRoute ? (
-              <div
-                key="custom-form"
-                className="flex h-full flex-col rounded-2xl border border-neutral-800 bg-neutral-950 p-6 shadow-2xl sm:p-8"
+            {step === 2 && selectedService ? (
+              <motion.div
+                key="s2"
+                initial={{ opacity: 0, x: 16 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -12 }}
+                transition={{ duration: 0.22 }}
               >
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--accent)]">
-                    <IconComponent className="h-6 w-6 text-black" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold uppercase tracking-wide text-[var(--accent)] sm:text-xl">
-                      {selectedService.name}
-                    </h3>
-                    <p className="mt-1 text-sm text-white/80">{selectedService.longDesc}</p>
-                  </div>
-                </div>
-                <div className="mt-5 space-y-4">
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold uppercase tracking-wider text-white/90">
-                      Pickup
-                    </label>
-                    <AddressAutocomplete
-                      value={customPickup}
-                      onChange={setCustomPickup}
-                      placeholder="Start typing an address in Sweden"
-                      className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-4 py-3 text-base text-white placeholder-white/50 focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold uppercase tracking-wider text-white/90">
-                      Destination
-                    </label>
-                    <AddressAutocomplete
-                      value={customDest}
-                      onChange={setCustomDest}
-                      placeholder="Start typing an address in Sweden"
-                      className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-4 py-3 text-base text-white placeholder-white/50 focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
-                    />
-                  </div>
-                </div>
-                <Link
-                  href={customRouteHref}
-                  className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-6 py-3.5 text-base font-bold text-black transition-all duration-300 ease-out hover:scale-[1.02] hover:bg-[var(--accent-hover)] sm:w-auto"
-                >
-                  {selectedService.ctaLabel}
-                  <span className="ml-1">→</span>
-                </Link>
-                <div className="mt-auto pt-6">
-                  <ServicePanelExtras selectedId={selectedId} />
-                </div>
-              </div>
-            ) : (
-              <div
-                key={selectedId}
-                className="flex h-full flex-col rounded-2xl border border-neutral-800 bg-neutral-950 p-6 shadow-2xl sm:p-8"
-              >
-                <div className="flex flex-wrap items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--accent)]">
-                    <IconComponent className="h-6 w-6 text-black" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-lg font-bold uppercase tracking-wide text-white sm:text-xl">
-                      {selectedService.name}
-                    </h3>
-                    <p className="mt-1 text-sm text-white/80">{selectedService.longDesc}</p>
-                  </div>
-                  <div className="relative hidden h-24 w-40 shrink-0 overflow-hidden rounded-lg border border-neutral-800 sm:block lg:h-28 lg:w-44">
-                    <Image
-                      src="https://images.unsplash.com/photo-1617788138017-80ad40651399?w=400&q=80"
-                      alt=""
-                      fill
-                      className="object-cover"
-                      sizes="176px"
-                    />
-                  </div>
+                <div className="mb-6 flex items-center gap-2 rounded-xl border border-neutral-200 bg-[var(--book-wizard-bg)] px-4 py-3 text-sm text-[var(--book-wizard-text)] sm:text-base">
+                  {(() => {
+                    const SummaryIcon =
+                      icons[selectedService.icon] ?? MapPin;
+                    return (
+                      <SummaryIcon
+                        className="h-4 w-4 shrink-0 text-[var(--accent)]"
+                        aria-hidden
+                        strokeWidth={1.75}
+                      />
+                    );
+                  })()}
+                  <span>
+                    <span className="font-semibold">{selectedService.name}</span>
+                    <span className="text-neutral-500"> — </span>
+                    <span className="font-bold text-[var(--book-wizard-text)]">
+                      {selectedService.priceLabel}
+                    </span>
+                  </span>
                 </div>
 
-                <p className="mt-5 text-2xl font-bold text-[var(--accent)] sm:text-4xl">
-                  {selectedService.priceLabel}
-                </p>
-                <p className="mt-2 text-sm text-white/70">{selectedService.tagline}</p>
-
-                {"highlights" in selectedService && selectedService.highlights ? (
-                  <>
-                    <div className="mt-5 flex flex-wrap gap-3">
-                      <div className="flex items-center gap-2 rounded-lg bg-neutral-900 px-3 py-2 text-sm text-white/90">
-                        <Clock className="h-4 w-4 text-[var(--accent)]" />
-                        {selectedService.duration}
-                      </div>
-                      <div className="flex items-center gap-2 rounded-lg bg-neutral-900 px-3 py-2 text-sm text-white/90">
-                        <MapPin className="h-4 w-4 text-[var(--accent)]" />
-                        {selectedService.route}
-                      </div>
-                      {"extraLabel" in selectedService && (
-                        <div className="flex items-center gap-2 rounded-lg bg-neutral-900 px-3 py-2 text-sm text-white/90">
-                          <User className="h-4 w-4 text-[var(--accent)]" />
-                          {selectedService.extraLabel}
-                        </div>
-                      )}
-                    </div>
-                    <h4 className="mt-6 text-sm font-semibold uppercase tracking-wider text-white">
-                      Tour Highlights
-                    </h4>
-                    <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                      {selectedService.highlights.map((h) => (
-                        <div key={h} className="flex items-center gap-2 text-sm text-white/90">
-                          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)]" />
-                          {h}
-                        </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
+                    <label
+                      htmlFor="wizard-name"
+                      className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--book-wizard-text)]"
+                    >
+                      Name
+                    </label>
+                    <input
+                      id="wizard-name"
+                      type="text"
+                      autoComplete="name"
+                      value={form.fullName}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, fullName: e.target.value }))
+                      }
+                      className={inputClass}
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label
+                      htmlFor="wizard-phone"
+                      className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--book-wizard-text)]"
+                    >
+                      Phone number
+                    </label>
+                    <input
+                      id="wizard-phone"
+                      type="tel"
+                      autoComplete="tel"
+                      value={form.phone}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, phone: e.target.value }))
+                      }
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="wizard-date"
+                      className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--book-wizard-text)]"
+                    >
+                      Date
+                    </label>
+                    <input
+                      id="wizard-date"
+                      type="date"
+                      min={minDate}
+                      value={form.date}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, date: e.target.value }))
+                      }
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="wizard-time"
+                      className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--book-wizard-text)]"
+                    >
+                      Time
+                    </label>
+                    <input
+                      id="wizard-time"
+                      type="time"
+                      value={form.time}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, time: e.target.value }))
+                      }
+                      className={inputClass}
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label
+                      htmlFor="wizard-passengers"
+                      className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--book-wizard-text)]"
+                    >
+                      Passengers
+                    </label>
+                    <select
+                      id="wizard-passengers"
+                      value={form.passengers}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          passengers: Number(e.target.value),
+                        }))
+                      }
+                      className={inputClass}
+                    >
+                      {[1, 2, 3, 4, 5, 6].map((n) => (
+                        <option key={n} value={n}>
+                          {n}
+                        </option>
                       ))}
-                    </div>
-                  </>
-                ) : (
-                  <div className="mt-5 flex flex-wrap gap-4 sm:gap-5">
-                    <div className="flex items-center gap-2 text-sm text-white/90">
-                      <Clock className="h-4 w-4 text-[var(--accent)]" />
-                      {selectedService.duration}
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-white/90">
-                      <MapPin className="h-4 w-4 text-[var(--accent)]" />
-                      {selectedService.route}
-                    </div>
+                    </select>
                   </div>
-                )}
-
-                {!("highlights" in selectedService) && selectedService.features && (
-                  <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-sm text-white/80">
-                    {selectedService.features.map((f, i) => (
-                      <span key={f}>
-                        {f}
-                        {i < selectedService.features.length - 1 && " • "}
+                  <div className="sm:col-span-2">
+                    <label
+                      htmlFor="wizard-notes"
+                      className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--book-wizard-text)]"
+                    >
+                      Notes / Special requests{" "}
+                      <span className="font-normal normal-case text-neutral-500">
+                        (optional)
                       </span>
-                    ))}
+                    </label>
+                    <textarea
+                      id="wizard-notes"
+                      rows={3}
+                      value={form.notes}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, notes: e.target.value }))
+                      }
+                      placeholder="e.g. flight number, luggage info"
+                      className={`${inputClass} resize-y min-h-[5rem]`}
+                    />
                   </div>
-                )}
-
-                <Link
-                  href={`/book?service=${selectedId}`}
-                  className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-6 py-3.5 text-base font-bold text-black transition-all duration-300 ease-out hover:scale-[1.02] hover:bg-[var(--accent-hover)] sm:w-auto"
-                >
-                  {selectedService.ctaLabel}
-                  <span className="ml-1">→</span>
-                </Link>
-
-                <div className="mt-auto pt-6">
-                  <ServicePanelExtras selectedId={selectedId} />
                 </div>
+
+                <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setStep(1)}
+                    className="text-sm font-semibold text-neutral-600 underline-offset-4 transition hover:text-[var(--book-wizard-text)] hover:underline"
+                  >
+                    ← Back
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!canProceedStep2}
+                    onClick={() => setStep(3)}
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-6 py-3 text-sm font-bold uppercase tracking-wide text-[var(--book-wizard-text)] shadow-sm transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-45 sm:text-base"
+                  >
+                    Next
+                    <span aria-hidden>→</span>
+                  </button>
+                </div>
+              </motion.div>
+            ) : null}
+
+            {step === 3 && selectedService ? (
+              <motion.div
+                key="s3"
+                initial={{ opacity: 0, x: 16 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -12 }}
+                transition={{ duration: 0.22 }}
+              >
+                <div className="rounded-2xl border border-neutral-200 bg-[var(--book-wizard-bg)] p-5 sm:p-6">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500">
+                    Booking summary
+                  </h3>
+                  <dl className="mt-4 space-y-3 text-sm text-[var(--book-wizard-text)] sm:text-base">
+                    <div className="flex justify-between gap-4 border-b border-neutral-200/80 pb-3">
+                      <dt className="text-neutral-600">Service</dt>
+                      <dd className="text-right font-semibold">
+                        {selectedService.name}
+                      </dd>
+                    </div>
+                    <div className="flex justify-between gap-4 border-b border-neutral-200/80 pb-3">
+                      <dt className="text-neutral-600">Price</dt>
+                      <dd className="text-right font-bold text-[var(--book-wizard-text)]">
+                        {selectedService.priceLabel}
+                      </dd>
+                    </div>
+                    <div className="flex justify-between gap-4 border-b border-neutral-200/80 pb-3">
+                      <dt className="text-neutral-600">Name</dt>
+                      <dd className="text-right font-medium">{form.fullName}</dd>
+                    </div>
+                    <div className="flex justify-between gap-4 border-b border-neutral-200/80 pb-3">
+                      <dt className="text-neutral-600">Phone</dt>
+                      <dd className="text-right font-medium">{form.phone}</dd>
+                    </div>
+                    <div className="flex justify-between gap-4 border-b border-neutral-200/80 pb-3">
+                      <dt className="text-neutral-600">Date &amp; time</dt>
+                      <dd className="text-right font-medium">
+                        {form.date} · {form.time}
+                      </dd>
+                    </div>
+                    <div className="flex justify-between gap-4 border-b border-neutral-200/80 pb-3">
+                      <dt className="text-neutral-600">Passengers</dt>
+                      <dd className="text-right font-medium">
+                        {form.passengers}
+                      </dd>
+                    </div>
+                    {form.notes.trim() ? (
+                      <div className="pt-1">
+                        <dt className="text-neutral-600">Notes</dt>
+                        <dd className="mt-1 text-neutral-800">{form.notes}</dd>
+                      </div>
+                    ) : null}
+                  </dl>
+                </div>
+
+                <div className="mt-8 flex flex-col gap-3">
+                  <a
+                    href={whatsappHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-6 py-4 text-center text-sm font-bold uppercase tracking-wide text-[var(--book-wizard-text)] shadow-sm transition hover:bg-[var(--accent-hover)] sm:text-base"
+                  >
+                    Book via WhatsApp
+                    <span aria-hidden>→</span>
+                  </a>
+                  <a
+                    href={`tel:${TEL_HREF}`}
+                    className="inline-flex w-full items-center justify-center rounded-full border-2 border-[var(--book-wizard-text)] bg-transparent px-6 py-3.5 text-sm font-bold uppercase tracking-wide text-[var(--book-wizard-text)] transition hover:bg-[var(--book-wizard-text)]/5 sm:text-base"
+                  >
+                    Call to book
+                  </a>
+                </div>
+
+                <p className="mt-4 text-center text-xs text-neutral-500 sm:text-sm">
+                  Fixed price. No surge. All inclusive.
+                </p>
+
+                <div className="mt-8 flex justify-start">
+                  <button
+                    type="button"
+                    onClick={() => setStep(2)}
+                    className="text-sm font-semibold text-neutral-600 underline-offset-4 transition hover:text-[var(--book-wizard-text)] hover:underline"
+                  >
+                    ← Back
+                  </button>
+                </div>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+        </div>
+
+        <div className="mt-10 grid gap-4 sm:grid-cols-2">
+          <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm sm:p-6">
+            <div className="flex items-start gap-3">
+              <HelpCircle
+                className="mt-0.5 h-5 w-5 shrink-0 text-[var(--accent)]"
+                strokeWidth={1.75}
+              />
+              <div>
+                <p className="font-heading text-sm font-semibold text-[var(--book-wizard-text)]">
+                  Will the driver wait for my flight?
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-neutral-600">
+                  Yes. We track arrivals and adjust pickup time if you&apos;re
+                  delayed — no extra stress after landing.
+                </p>
               </div>
-            )}
+            </div>
           </div>
-        </motion.div>
+          <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm sm:p-6">
+            <div className="flex items-start gap-3">
+              <ShieldCheck
+                className="mt-0.5 h-5 w-5 shrink-0 text-[var(--accent)]"
+                strokeWidth={1.75}
+              />
+              <div>
+                <p className="font-heading text-sm font-semibold text-[var(--book-wizard-text)]">
+                  Fixed price guarantee
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-neutral-600">
+                  The price you see is what you pay — no surge pricing or hidden
+                  fees for airport transfers.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

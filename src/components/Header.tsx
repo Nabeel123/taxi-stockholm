@@ -38,8 +38,12 @@ export default function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-neutral-200 bg-white shadow-sm">
       <div className="relative mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 sm:h-16 sm:gap-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex min-w-0 max-w-[55%] items-center gap-2 sm:max-w-none">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-[var(--accent)] sm:h-9 sm:w-9">
+        <Link
+          href="/"
+          className="flex shrink-0 items-center"
+          aria-label="Home"
+        >
+          <div className="flex h-8 w-8 items-center justify-center rounded bg-[var(--accent)] sm:h-9 sm:w-9">
             <svg
               className="h-4 w-4 text-black sm:h-5 sm:w-5"
               viewBox="0 0 24 24"
@@ -52,9 +56,6 @@ export default function Header() {
               <circle cx="16.5" cy="16" r="1.5" />
             </svg>
           </div>
-          <span className="font-heading truncate text-base font-bold uppercase tracking-tight text-[var(--dark-slate)] sm:text-lg xl:text-xl">
-            Taxi Stockholm
-          </span>
         </Link>
 
         <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-4 xl:gap-5 lg:flex">

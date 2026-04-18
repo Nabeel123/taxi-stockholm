@@ -21,6 +21,10 @@
   /* Warm off-white (About + Services sections) */
   --surface-warm: #fdfaf5;
   --surface-warm-mid: #e8e4dc;
+  /* Book wizard section */
+  --book-wizard-bg: #faf9f6;
+  --book-wizard-text: #1a1a2e;
+  --book-card-selected: #fffbea;
   /* Design system */
   --section-padding: 5rem;
   --container-max: 80rem;
