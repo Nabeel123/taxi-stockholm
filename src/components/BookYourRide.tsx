@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
-import { Plane, MapPin, Landmark, Clock, User } from "lucide-react";
+import { Plane, MapPin, Landmark, Clock, User, ShieldCheck, HelpCircle } from "lucide-react";
 import { SERVICES } from "@/lib/constants";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 
@@ -30,6 +31,72 @@ const itemVariants = {
     transition: { duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] as const },
   }),
 };
+
+function ServicePanelExtras({
+  selectedId,
+}: {
+  selectedId: string;
+}) {
+  if (selectedId === "airport-pickup" || selectedId === "airport-dropoff") {
+    return (
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        <div className="rounded-xl border border-neutral-800 bg-neutral-900/80 p-4">
+          <div className="flex items-start gap-3">
+            <HelpCircle className="mt-0.5 h-5 w-5 shrink-0 text-[var(--accent)]" />
+            <div>
+              <p className="text-sm font-semibold text-white">Will the driver wait for my flight?</p>
+              <p className="mt-1 text-sm leading-relaxed text-white/75">
+                Yes. We track arrivals and adjust pickup time if you&apos;re delayed — no extra stress
+                after landing.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-xl border border-neutral-800 bg-neutral-900/80 p-4">
+          <div className="flex items-start gap-3">
+            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[var(--accent)]" />
+            <div>
+              <p className="text-sm font-semibold text-white">Fixed price guarantee</p>
+              <p className="mt-1 text-sm leading-relaxed text-white/75">
+                The price you see is what you pay — no surge pricing or hidden fees for airport
+                transfers.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  if (selectedId === "city-tour") {
+    return (
+      <div className="mt-6 rounded-xl border border-neutral-800 bg-neutral-900/80 p-4">
+        <div className="flex items-start gap-3">
+          <HelpCircle className="mt-0.5 h-5 w-5 shrink-0 text-[var(--accent)]" />
+          <div>
+            <p className="text-sm font-semibold text-white">Can we customize stops?</p>
+            <p className="mt-1 text-sm leading-relaxed text-white/75">
+              Tell us what you want to see — we&apos;ll tailor the route around your interests and
+              schedule.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="mt-6 rounded-xl border border-neutral-800 bg-neutral-900/80 p-4">
+      <div className="flex items-start gap-3">
+        <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-[var(--accent)]" />
+        <div>
+          <p className="text-sm font-semibold text-white">Any pickup in Stockholm</p>
+          <p className="mt-1 text-sm leading-relaxed text-white/75">
+            Door-to-door service across the metro area — enter addresses for an instant quote.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function BookYourRide() {
   const [selectedId, setSelectedId] = useState<string>("airport-pickup");
@@ -58,7 +125,7 @@ export default function BookYourRide() {
           transition={{ duration: 0.35 }}
           className="text-center"
         >
-          <span className="inline-block rounded-full bg-[var(--accent)] px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-black sm:text-sm">
+          <span className="font-heading inline-block rounded-full bg-[var(--accent)] px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-black sm:text-sm">
             Services
           </span>
           <h2 className="mt-2 text-2xl font-bold text-[var(--dark-slate)] sm:text-3xl md:text-4xl">
@@ -74,78 +141,89 @@ export default function BookYourRide() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-60px" }}
-          className="mt-8 grid gap-4 lg:mt-10 lg:grid-cols-[280px_1fr] lg:gap-6"
+          className="mt-8 grid gap-4 lg:mt-10 lg:grid-cols-[minmax(300px,320px)_1fr] lg:gap-6"
         >
-          {/* Left: Service selection */}
           <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap lg:flex-col">
             {SERVICES.map((service, i) => {
               const Icon = icons[service.icon] || MapPin;
               const isSelected = selectedId === service.id;
+              const bookHref =
+                service.id === "custom-route"
+                  ? `/book?service=custom-route`
+                  : `/book?service=${service.id}`;
               return (
-                <motion.button
+                <motion.div
                   key={service.id}
-                  type="button"
                   variants={itemVariants}
                   custom={i}
-                  onClick={() => setSelectedId(service.id)}
-                  className={`group relative flex min-w-0 flex-1 items-center gap-2 rounded-xl border p-2.5 text-left transition-all duration-200 ease-out sm:min-w-[calc(50%-0.25rem)] sm:gap-3 sm:p-3 lg:min-w-0 ${
+                  className={`flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border transition-all duration-200 ease-out sm:min-w-[calc(50%-0.25rem)] lg:min-w-0 ${
                     isSelected
-                      ? "border-[var(--accent)] bg-neutral-950 shadow-md ring-1 ring-[var(--accent)]"
-                      : "border-neutral-800 bg-neutral-900 hover:border-neutral-700 hover:bg-neutral-900/90"
+                      ? "border-[var(--accent)] border-l-4 border-l-[var(--accent)] bg-neutral-800 shadow-lg shadow-black/20 ring-2 ring-[var(--accent)]/35"
+                      : "border-neutral-800 border-l-4 border-l-transparent bg-neutral-900 hover:border-neutral-600 hover:bg-neutral-900/95"
                   }`}
                 >
-                  <div
-                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors ${
-                      isSelected ? "bg-[var(--accent)]" : "bg-neutral-700"
-                    }`}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedId(service.id)}
+                    className="group flex w-full min-w-0 flex-1 items-stretch gap-2 p-2.5 text-left sm:gap-3 sm:p-3"
                   >
-                    <Icon
-                      className={`h-4 w-4 sm:h-5 sm:w-5 ${
-                        isSelected ? "text-black" : "text-white/80"
+                    <div
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors ${
+                        isSelected ? "bg-[var(--accent)]" : "bg-neutral-700"
                       }`}
-                    />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    {service.popular && (
-                      <span
-                        className={`absolute right-2 top-2 rounded px-1.5 py-0.5 text-[10px] font-bold ${
-                          isSelected
-                            ? "bg-[var(--accent)] text-black"
-                            : "bg-[var(--accent)]/20 text-[var(--accent)]"
+                    >
+                      <Icon
+                        className={`h-4 w-4 sm:h-5 sm:w-5 ${
+                          isSelected ? "text-black" : "text-white/80"
+                        }`}
+                      />
+                    </div>
+                    <div className="flex min-w-0 flex-1 flex-col">
+                      <div className="flex items-start justify-between gap-2">
+                        <h3
+                          className={`min-w-0 flex-1 text-xs font-semibold uppercase leading-snug tracking-wide sm:text-sm ${
+                            isSelected ? "text-white" : "text-white/90"
+                          }`}
+                        >
+                          {service.name}
+                        </h3>
+                        {service.popular ? (
+                          <span className="ml-1 inline-flex shrink-0 items-center rounded-full bg-emerald-500 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white shadow-sm sm:px-2.5 sm:py-1 sm:text-[10px]">
+                            Popular
+                          </span>
+                        ) : null}
+                      </div>
+                      <p
+                        className={`mt-1 line-clamp-2 text-[11px] leading-snug sm:text-xs ${
+                          isSelected ? "text-white/90" : "text-white/80"
                         }`}
                       >
-                        Popular
-                      </span>
-                    )}
-                    <h3
-                      className={`text-xs font-semibold uppercase tracking-wide sm:text-sm ${
-                        isSelected ? "text-white" : "text-white/90"
-                      }`}
+                        {service.description}
+                      </p>
+                      <p className="mt-2 text-xs font-bold text-[var(--accent)] sm:text-sm">
+                        {service.priceLabel}
+                      </p>
+                    </div>
+                  </button>
+                  <div className="mt-auto border-t border-neutral-800 bg-neutral-950/90 px-2.5 py-2.5 sm:px-3 sm:py-3">
+                    <Link
+                      href={bookHref}
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex w-full items-center justify-center rounded-lg bg-[var(--accent)]/15 py-2.5 text-center text-xs font-bold uppercase tracking-wide text-[var(--accent)] transition-colors hover:bg-[var(--accent)] hover:text-black"
                     >
-                      {service.name}
-                    </h3>
-                    <p className={`mt-0.5 line-clamp-2 text-[11px] sm:text-xs leading-tight ${isSelected ? "text-white/90" : "text-white/80"}`}>
-                      {service.description}
-                    </p>
-                    <p
-                      className={`mt-1 text-xs font-bold sm:text-sm ${
-                        isSelected ? "text-[var(--accent)]" : "text-white/90"
-                      }`}
-                    >
-                      {service.priceLabel}
-                    </p>
+                      Book this service
+                    </Link>
                   </div>
-                </motion.button>
+                </motion.div>
               );
             })}
           </div>
 
-          {/* Right: Detail panel - min-height prevents layout shift when switching to City Tour */}
           <div className="min-h-[360px] sm:min-h-[420px] lg:min-h-[460px]">
             {isCustomRoute ? (
               <div
                 key="custom-form"
-                className="rounded-2xl border border-neutral-800 bg-neutral-950 p-6 shadow-2xl sm:p-8"
+                className="flex h-full flex-col rounded-2xl border border-neutral-800 bg-neutral-950 p-6 shadow-2xl sm:p-8"
               >
                 <div className="flex items-start gap-4">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--accent)]">
@@ -189,21 +267,33 @@ export default function BookYourRide() {
                   {selectedService.ctaLabel}
                   <span className="ml-1">→</span>
                 </Link>
+                <div className="mt-auto pt-6">
+                  <ServicePanelExtras selectedId={selectedId} />
+                </div>
               </div>
             ) : (
               <div
                 key={selectedId}
-                className="rounded-2xl border border-neutral-800 bg-neutral-950 p-6 shadow-2xl sm:p-8"
+                className="flex h-full flex-col rounded-2xl border border-neutral-800 bg-neutral-950 p-6 shadow-2xl sm:p-8"
               >
-                <div className="flex items-start gap-4">
+                <div className="flex flex-wrap items-start gap-4">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--accent)]">
                     <IconComponent className="h-6 w-6 text-black" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <h3 className="text-lg font-bold uppercase tracking-wide text-white sm:text-xl">
                       {selectedService.name}
                     </h3>
                     <p className="mt-1 text-sm text-white/80">{selectedService.longDesc}</p>
+                  </div>
+                  <div className="relative hidden h-24 w-40 shrink-0 overflow-hidden rounded-lg border border-neutral-800 sm:block lg:h-28 lg:w-44">
+                    <Image
+                      src="https://images.unsplash.com/photo-1617788138017-80ad40651399?w=400&q=80"
+                      alt=""
+                      fill
+                      className="object-cover"
+                      sizes="176px"
+                    />
                   </div>
                 </div>
 
@@ -212,7 +302,6 @@ export default function BookYourRide() {
                 </p>
                 <p className="mt-2 text-sm text-white/70">{selectedService.tagline}</p>
 
-                {/* Feature boxes for City Tour */}
                 {"highlights" in selectedService && selectedService.highlights ? (
                   <>
                     <div className="mt-5 flex flex-wrap gap-3">
@@ -256,7 +345,6 @@ export default function BookYourRide() {
                   </div>
                 )}
 
-                {/* Feature list for airport services */}
                 {!("highlights" in selectedService) && selectedService.features && (
                   <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-sm text-white/80">
                     {selectedService.features.map((f, i) => (
@@ -275,6 +363,10 @@ export default function BookYourRide() {
                   {selectedService.ctaLabel}
                   <span className="ml-1">→</span>
                 </Link>
+
+                <div className="mt-auto pt-6">
+                  <ServicePanelExtras selectedId={selectedId} />
+                </div>
               </div>
             )}
           </div>

@@ -21,9 +21,15 @@ const operations = [
   },
 ];
 
+const storyBullets = [
+  "English & Swedish speaking chauffeurs",
+  "Licensed, insured, and professionally trained drivers",
+  "Discreet, business-ready service for executives and guests",
+];
+
 export default function AboutOperations() {
   return (
-    <section className="bg-white py-16 sm:py-20 md:py-24">
+    <section className="bg-white py-16 sm:py-20 md:py-24" id="about">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -31,7 +37,7 @@ export default function AboutOperations() {
           viewport={{ once: true }}
           className="mb-12 text-center"
         >
-          <span className="inline-block rounded-full bg-[var(--accent)] px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-black sm:text-sm">
+          <span className="font-heading inline-block rounded-full bg-[var(--accent)] px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-black sm:text-sm">
             About Us
           </span>
           <h2 className="mt-2 text-2xl font-bold text-[var(--dark-slate)] sm:text-3xl md:text-4xl">
@@ -39,7 +45,6 @@ export default function AboutOperations() {
           </h2>
         </motion.div>
         <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-2 md:gap-12 lg:gap-16">
-          {/* Left - Why Choose Us */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -53,22 +58,24 @@ export default function AboutOperations() {
             <h2 className="mt-2 text-xl font-bold text-white sm:text-2xl md:text-3xl">
               Stockholm&apos;s Premier Tesla Taxi
             </h2>
-            <p className="mt-4 text-white/80 leading-relaxed">
-              Providing luxury transportation across Stockholm with 15+ years of excellence. Our Tesla Model S 2024 fleet delivers punctual, reliable, and eco-friendly rides for business, airport transfers, and city tours.
+            <p className="mt-4 leading-relaxed text-white/80">
+              Providing luxury transportation across Stockholm with 15+ years of excellence. Our Tesla
+              Model S 2024 fleet delivers punctual, reliable, and eco-friendly rides for business,
+              airport transfers, and city tours.
             </p>
-            <div className="mt-6 flex flex-wrap gap-2">
-              {["English", "Swedish", "Professional"].map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-lg bg-neutral-900 px-3 py-1.5 text-xs font-medium text-white/90"
-                >
-                  {tag}
-                </span>
+            <ul className="mt-6 space-y-3">
+              {storyBullets.map((line) => (
+                <li key={line} className="flex gap-3 text-sm text-white/90 sm:text-base">
+                  <span
+                    className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)]"
+                    aria-hidden
+                  />
+                  <span>{line}</span>
+                </li>
               ))}
-            </div>
+            </ul>
           </motion.div>
 
-          {/* Right - Operation Details */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -88,9 +95,7 @@ export default function AboutOperations() {
                       <Icon className="h-6 w-6 text-black" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-white">
-                        {item.title}
-                      </h4>
+                      <h4 className="font-semibold text-white">{item.title}</h4>
                       <p className="mt-1 text-sm text-white/80">{item.desc}</p>
                     </div>
                   </div>

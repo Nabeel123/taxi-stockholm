@@ -1,14 +1,23 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Poppins, Roboto } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 
 const GA_MEASUREMENT_ID =
   process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? "G-6TX3DHHXDZ";
 
-const inter = Inter({
-  variable: "--font-inter",
+const roboto = Roboto({
+  variable: "--font-roboto",
   subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  display: "swap",
+});
+
+const poppins = Poppins({
+  variable: "--font-poppins",
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
+  display: "swap",
 });
 
 export const viewport: Viewport = {
@@ -30,7 +39,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} min-w-0 overflow-x-hidden antialiased w-full`}>
+      <body
+        className={`${roboto.variable} ${poppins.variable} min-w-0 w-full overflow-x-hidden antialiased`}
+      >
         {GA_MEASUREMENT_ID ? (
           <>
             <Script

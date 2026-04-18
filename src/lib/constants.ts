@@ -17,7 +17,8 @@ export const SERVICES = [
   },
   {
     id: "airport-dropoff",
-    name: "Airport Drop-off",
+    /** U+2011 non-breaking hyphen avoids “DROP-” / “OFF” line splits in narrow cards */
+    name: "Airport Drop\u2011off",
     displayName: "City to Arlanda",
     description: "City Center → Arlanda",
     longDesc: "Stockholm City Center → Arlanda Airport",

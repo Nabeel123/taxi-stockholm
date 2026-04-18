@@ -14,9 +14,9 @@ export default function Home() {
       <main className="w-full min-w-0">
         <Hero />
         <BookYourRide />
+        <CTASection />
         <Testimonials />
         <AboutOperations />
-        <CTASection />
         <MapSection />
         <Footer />
       </main>
