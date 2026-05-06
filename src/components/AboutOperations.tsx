@@ -1,44 +1,34 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import {
   Award,
   Languages,
   MapPinned,
   type LucideIcon,
 } from "lucide-react";
-import { COMPANY } from "@/lib/site";
 
-const features: {
-  icon: LucideIcon;
+type FeatureCopy = {
   title: string;
   lines: string[];
-}[] = [
-  {
-    icon: Languages,
-    title: "English & Swedish speaking chauffeurs",
-    lines: [
-      "Licensed, insured, and professionally trained drivers.",
-      "Discreet, business-ready service for executives and guests.",
-    ],
-  },
-  {
-    icon: MapPinned,
-    title: "Stockholm, Arlanda & Skavsta",
-    lines: [
-      "Fixed-price airport routes and comfortable city rides.",
-      "Book on the website or WhatsApp — we’re here 24/7.",
-    ],
-  },
-  {
-    icon: Award,
-    title: "Driven by professionals",
-    lines: ["Experienced drivers focused on safety and punctuality."],
-  },
-];
+};
 
 export default function AboutOperations() {
+  const t = useTranslations("about");
+  const tSite = useTranslations("site");
+  const rawFeatures = t.raw("features") as FeatureCopy[];
+
+  const features: {
+    icon: LucideIcon;
+    title: string;
+    lines: string[];
+  }[] = rawFeatures.map((copy, idx) => {
+    const icons: LucideIcon[] = [Languages, MapPinned, Award];
+    return { icon: icons[idx]!, title: copy.title, lines: copy.lines };
+  });
+
   return (
     <section className="relative overflow-hidden py-16 sm:py-20 md:py-24" id="about">
       <div className="pointer-events-none absolute inset-0" aria-hidden>
@@ -59,10 +49,10 @@ export default function AboutOperations() {
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
           <div className="order-2 lg:order-1">
             <h2 className="font-heading text-balance text-2xl font-bold leading-tight tracking-tight text-[var(--secondary)] sm:text-3xl md:text-[2.25rem] md:leading-[1.12]">
-              {COMPANY.brandTitle}
+              {tSite("brandTitle")}
             </h2>
             <p className="mt-4 max-w-xl text-base leading-relaxed text-neutral-600 sm:text-lg">
-              {COMPANY.description}
+              {tSite("description")}
             </p>
 
             <ul className="mt-10 space-y-10">
@@ -98,7 +88,7 @@ export default function AboutOperations() {
               href="/book"
               className="mt-10 inline-flex items-center justify-center rounded-full bg-[var(--accent)] px-8 py-3.5 text-sm font-bold uppercase tracking-wide text-[var(--secondary)] shadow-sm transition hover:bg-[var(--accent-hover)] sm:text-base"
             >
-              Book now
+              {t("bookNow")}
             </Link>
           </div>
 
@@ -107,7 +97,7 @@ export default function AboutOperations() {
               <div className="relative aspect-[4/5] overflow-hidden rounded-2xl shadow-xl sm:aspect-[4/5] md:aspect-[5/6] lg:aspect-square">
                 <Image
                   src="/about.jpg"
-                  alt="Premium taxi — vehicle and city setting"
+                  alt={t("imageAlt")}
                   fill
                   className="object-cover object-center"
                   sizes="(max-width: 1024px) 100vw, 50vw"
@@ -115,11 +105,11 @@ export default function AboutOperations() {
 
                 <div className="absolute right-3 top-3 z-10 max-w-[min(100%,17rem)] rounded-xl border border-white/10 bg-[var(--primary)]/95 p-3.5 shadow-2xl backdrop-blur-sm sm:right-4 sm:top-4 sm:max-w-[18.5rem] sm:p-4">
                   <p className="text-sm font-medium text-white">
-                    Pickup in{" "}
-                    <span className="font-bold text-[var(--accent)]">about 5 min</span>
+                    {t("pickupLine")}{" "}
+                    <span className="font-bold text-[var(--accent)]">{t("pickupEta")}</span>
                   </p>
                   <p className="mt-1 text-xs leading-snug text-white/65">
-                    Premium eco-friendly vehicle · Alexander
+                    {t("pickupSub")}
                   </p>
                   <div className="relative mt-3">
                     <div className="h-2 w-full overflow-hidden rounded-full bg-white/15">

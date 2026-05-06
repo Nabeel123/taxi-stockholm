@@ -10,7 +10,13 @@ import { getMasthead } from "@/lib/sanity/masthead";
 /** ISR interval (seconds); must match `MASTHEAD_REVALIDATE_SECONDS` in `@/lib/sanity/constants`. */
 export const revalidate = 60;
 
-export default async function Home() {
+type HomeProps = {
+  params: Promise<{ locale: string }>;
+};
+
+export default async function Home({ params }: HomeProps) {
+  await params;
+
   const masthead = await getMasthead();
 
   return (

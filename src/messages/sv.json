@@ -1,0 +1,362 @@
+{
+  "metadata": {
+    "title": "Flygtaxi — Stockholm, Arlanda & Skavsta | Sahotra Services AB",
+    "description": "Fast pris till och från Stockholm, Arlanda (ARN) och Skavsta. Bokning dygnet runt, professionella förare och bekväma, miljövänliga bilar."
+  },
+  "site": {
+    "brandTitle": "Taxi till eller från Stockholm, Arlanda och Skavsta",
+    "description": "Premiumresor i Stockholm och till Arlanda. Pålitliga flygplatsresor, stadskörningar och mer. Fast pris, bokning dygnet runt, professionella förare — ett projekt från Sahotra Services AB.",
+    "vehicleTagline": "Premium, miljövänliga fordon — bekväma resor med lägre miljöpåverkan.",
+    "vehicleShort": "Premium miljöbil",
+    "vastervasOffer": "Västerås ↔ Arlanda / Stockholm — 1000 SEK fast pris",
+    "licensedInsured": "Licensierad och försäkrad"
+  },
+  "common": {
+    "quote": "Offert",
+    "loading": "Laddar…",
+    "min": "min",
+    "km": "km"
+  },
+  "language": {
+    "switchToSv": "Svenska",
+    "switchToEn": "English",
+    "label": "Språk"
+  },
+  "header": {
+    "home": "Hem",
+    "about": "Om oss",
+    "services": "Tjänster",
+    "reviews": "Recensioner",
+    "bookNow": "Boka nu",
+    "toggleMenu": "Öppna meny",
+    "homeAria": "Hem"
+  },
+  "footer": {
+    "rights": "Alla rättigheter förbehållna.",
+    "quickLinks": "Snabblänkar",
+    "contact": "Kontakt",
+    "followUs": "Följ oss",
+    "facebook": "Facebook",
+    "instagram": "Instagram",
+    "whatsapp": "WhatsApp",
+    "reviews": "Recensioner",
+    "bookNow": "Boka nu",
+    "about": "Om oss",
+    "services": "Tjänster",
+    "workAt": "Arbeta på {company}",
+    "privacy": "Integritetspolicy",
+    "terms": "Användarvillkor"
+  },
+  "hero": {
+    "pickupPlaceholder": "Hämtningsadress",
+    "dropoffPlaceholder": "Avlämningsadress",
+    "trustRating": "5,0 i betyg",
+    "trustRides": "1000+ resor",
+    "trustFixed": "Fast pris",
+    "contactPrompt": "Vill du hellre ringa?",
+    "callLabel": "Ring {phone}",
+    "whatsapp": "WhatsApp",
+    "bookingCardTitle": "Få pris på sekunder",
+    "primaryCta": "Få pris"
+  },
+  "bookYourRide": {
+    "kicker": "Tjänster",
+    "title": "Boka din resa",
+    "subtitle": "Välj tjänst och boka snabbt",
+    "popular": "Populär",
+    "next": "Nästa",
+    "back": "← Tillbaka",
+    "name": "Namn",
+    "phone": "Telefonnummer",
+    "date": "Datum",
+    "time": "Tid",
+    "passengers": "Passagerare",
+    "notesOptional": "(valfritt)",
+    "notesLabel": "Anteckningar / Särskilda önskemål",
+    "notesPlaceholder": "t.ex. flightnummer, bagageinfo",
+    "bookingSummary": "Bokningsöversikt",
+    "summaryService": "Tjänst",
+    "summaryPrice": "Pris",
+    "summaryName": "Namn",
+    "summaryPhone": "Telefon",
+    "summaryDateTime": "Datum & tid",
+    "summaryPassengers": "Passagerare",
+    "summaryNotes": "Anteckningar",
+    "whatsappBook": "Boka via WhatsApp",
+    "callBook": "Ring och boka",
+    "footerTrust": "Fast pris. Inga tillägg. Allt ingår.",
+    "faq1q": "Väntar föraren på mitt flyg?",
+    "faq1a": "Ja. Vi följer ankomster och justerar upphämtning om du blir sen — mindre stress efter landning.",
+    "faq2q": "Garanti för fast pris",
+    "faq2a": "Priset du ser är vad du betalar — ingen dynamisk prissättning eller dolda avgifter för flygplats­transfers.",
+    "steps": {
+      "choose": "Välj tjänst",
+      "details": "Dina uppgifter",
+      "confirm": "Bekräfta"
+    },
+    "wa": {
+      "title": "🚖 Bokningsförfrågan — {company}",
+      "brand": "{brand}",
+      "service": "Tjänst",
+      "route": "Rutt / info",
+      "price": "Pris",
+      "name": "Namn",
+      "phone": "Telefon",
+      "date": "Datum",
+      "time": "Tid",
+      "passengers": "Passagerare",
+      "notes": "Anteckningar"
+    }
+  },
+  "services": {
+    "airport_pickup": {
+      "name": "Flygplats­hämtning",
+      "displayName": "Arlanda till city",
+      "description": "Arlanda → City",
+      "tagline": "Fast pris. Inga tillägg. Allt ingår.",
+      "duration": "45–60 min",
+      "route": "Direktrutt",
+      "features": ["Fast pris", "Flightspårning", "Tidsgaranti"],
+      "ctaLabel": "BOKA FLYGPLATSHÄMTNING"
+    },
+    "airport_dropoff": {
+      "name": "Körning till flygplats",
+      "displayName": "City till Arlanda",
+      "description": "City → Arlanda",
+      "tagline": "Fast pris. Flightspårning. Punktliga avtalade tider.",
+      "duration": "45–60 min",
+      "route": "Dörr till dörr",
+      "features": ["Fast pris", "Flightspårning", "Tidsgaranti"],
+      "ctaLabel": "BOKA FLYGPLATSKÖRNING"
+    },
+    "city_tour": {
+      "name": "Stadsrundtur",
+      "displayName": "Stadsrundtur",
+      "description": "4 timmars sightseeing",
+      "tagline": "Professionell guide. Fotostopp ingår.",
+      "duration": "4 timmar",
+      "route": "6+ stopp",
+      "extraLabel": "Guide",
+      "features": ["4 timmar", "6+ platser", "Professionell guide", "Fotostopp"],
+      "highlights": ["Gamla stan", "Vasamuseet", "Fotostopp", "Kungliga slottet", "Moderna kvarter", "Professionell guide"],
+      "ctaLabel": "BOKA STADSRUNDTUR"
+    },
+    "custom_route": {
+      "name": "Specialrutt",
+      "displayName": "Specialrutt",
+      "description": "Valfri destination i Stockholm",
+      "tagline": "Flexibla rutter efter dina behov.",
+      "duration": "Flexibel",
+      "route": "Egna stopp",
+      "features": ["Flexibelt", "Valfritt avstånd", "Egna stopp"],
+      "ctaLabel": "FA OFFERT & BOKA"
+    }
+  },
+  "about": {
+    "bookNow": "Boka nu",
+    "imageAlt": "Premium taxi — bil och stad",
+    "pickupLine": "Hämtning om cirka",
+    "pickupEta": "5 min",
+    "pickupSub": "Premium miljöbil · Alexander",
+    "features": [
+      {
+        "title": "Chaufförer på engelska och svenska",
+        "lines": [
+          "Licensierade, försäkrade och professionellt utbildade förare.",
+          "Diskret, affärsanpassad service för styrelse och besökande."
+        ]
+      },
+      {
+        "title": "Stockholm, Arlanda & Skavsta",
+        "lines": [
+          "Fast pris för flygplats och bekväma resor i stan.",
+          "Boka på webben eller WhatsApp — vi finns här dygnet runt."
+        ]
+      },
+      {
+        "title": "Drivna proffs",
+        "lines": ["Erfarna förare med fokus på säkerhet och punktlighet."]
+      }
+    ]
+  },
+  "cta": {
+    "availableNow": "TILLGÄNGLIG NU",
+    "bannerBook": "Boka via",
+    "bannerWebsite": "webbplatsen",
+    "bannerOr": "eller",
+    "bannerWhatsapp": "WhatsApp.",
+    "bookOnline": "Boka online",
+    "needRide": "Behöver du bil nu?",
+    "sublead": "Snabba upphämtningar i Stockholm och till flygplats — professionella förare och en premium miljövänlig vagnpark.",
+    "driversAvailable": "Förare tillgängliga nu — Stockholm & flygplats",
+    "ridesCompleted": "2400+ genomförda resor",
+    "bookOnlineCaps": "Boka online",
+    "orCallUs": "Eller ring oss",
+    "callAria": "Ring {phone}",
+    "avgResponse": "Snitt svar",
+    "pickupTime": "Hämtning",
+    "arlandaFixedPrice": "Fast pris Arlanda",
+    "arlandaTooltipAria": "Om fast pris Arlanda: enkel resa mellan Stockholms city och Arlanda (ARN), utan tillägg.",
+    "arlandaTooltipBody": "Fast pris enkel resa mellan Stockholms city och Arlanda (ARN). Inga tillägg eller dolda avgifter.",
+    "responseValue": "2 min",
+    "pickupValue": "5 min",
+    "secpayPlaceholder": "595 SEK"
+  },
+  "testimonials": {
+    "kicker": "Omdömen",
+    "title": "Vad folk säger",
+    "subtitle": "Rekommenderas av Stockholms yrkesresenärer och besökare",
+    "googleReview": "Google-recension",
+    "prevAria": "Föregående omdömen",
+    "nextAria": "Nästa omdömen",
+    "trustIndicators": [
+      { "value": "5,0", "label": "Snittbetyg" },
+      { "value": "1000+", "label": "Nöjda kunder" },
+      { "value": "24/7", "label": "Alltid tillgängliga" }
+    ],
+    "items": [
+      {
+        "quote": "Utmärkt service. Alltid i tid, professionella förare och tydlig prissättning. Min förstahandsväljare till flygplatsen.",
+        "name": "Erik Andersson",
+        "title": "Företagsledning"
+      },
+      {
+        "quote": "Rena bilar, pålitligt och inga överraskningar på priset. Perfekt för affärsresor i Stockholm.",
+        "name": "Anna Lindström",
+        "title": "Frekvent resenär"
+      },
+      {
+        "quote": "Vi rekommenderar Taxi till alla våra gäster. Proffsigt, punktligt och hög kvalitet varje gång.",
+        "name": "Marcus Johansson",
+        "title": "Hotellchef"
+      },
+      {
+        "quote": "Smidig bokning och tyst, behaglig resa varje gång. Förarna kan stan utan och innan.",
+        "name": "Lisa Berg",
+        "title": "Konsult"
+      },
+      {
+        "quote": "Möttes vid gaten med skylt, hjälpte till med bagaget och fram i tid till mötet. Rekommenderar starkt.",
+        "name": "Jonas Holm",
+        "title": "Säljchef"
+      },
+      {
+        "quote": "Använt till familjeresa till Arlanda — barnstol redo, trevlig förare och fast pris gjorde planering enkel.",
+        "name": "Sofia Nordin",
+        "title": "Förälder till två"
+      },
+      {
+        "quote": "Sen flygning, ösregn – ändå där och väntade. WhatsApp funkade jättebra. Fem stjärnor.",
+        "name": "David Chen",
+        "title": "Produktdesigner"
+      }
+    ]
+  },
+  "bookPage": {
+    "title": "Boka din resa",
+    "subtitle": "Fyll i dina uppgifter",
+    "backAria": "Tillbaka",
+    "backToHomeAria": "Tillbaka till startsidan"
+  },
+  "privacy": {
+    "backToHome": "← Tillbaka till startsidan",
+    "lastUpdated": "Senast uppdaterad:",
+    "title": "Integritetspolicy",
+    "s1h": "1. Uppgifter vi samlar in",
+    "s1p": "Vi samlar in uppgifter du anger vid bokning, till exempel namn, e‑post, telefonnummer, hämtnings- och lämningsadress samt särskilda önskemål. Uppgifterna används endast för att leverera taxitjänsten och förbättra din upplevelse.",
+    "s2h": "2. Hur vi använder uppgifterna",
+    "s2p": "Uppgifterna används för att hantera bokningar, kommunicera om din resa och koordinera med förare. Vi säljer eller delar inte dina personuppgifter med tredje part för marknadsföring.",
+    "s3h": "3. Datasäkerhet",
+    "s3p": "Vi vidtar lämpliga tekniska och organisatoriska åtgärder för att skydda dina personuppgifter mot obehörig åtkomst, ändring, spridning eller förstörelse.",
+    "s4h": "4. Kontakta oss",
+    "s4p": "Frågor om denna policy eller dina uppgifter? Kontakta oss på {phone} eller via vårt kontaktformulär."
+  },
+  "terms": {
+    "backToHome": "← Tillbaka till startsidan",
+    "lastUpdated": "Senast uppdaterad:",
+    "title": "Användarvillkor",
+    "s1h": "1. Tjänstens omfattning",
+    "s1p": "{company} erbjuder premium taxi- och transfer­tjänster i Stockholms­regionen, inklusive rutter till/från Arlanda och Skavsta. Tjänsterna omfattar flygplats­transfers, stads­rundturer och specialrutter. Angivna priser är fasta och anges i svenska kronor (SEK).",
+    "s2h": "2. Bokning och avbokning",
+    "s2p": "Bokning bekräftas vid inskick. Vi rekommenderar avbokning minst 24 timmar innan flyg­transfer. Sen avbokning kan medföra avgifter enligt vad som anges vid bokning.",
+    "s3h": "3. Avståndsbegränsning",
+    "s3p": "Vår standard omfattar resor upp till 47 km. För längre sträckor, kontakta oss för offert.",
+    "s4h": "4. Ansvar",
+    "s4p": "Vi ansvarar inte för förseningar orsakade av omständigheter utanför vår kontroll, till exempel trafik, väder eller flygförseningar. Vi strävar efter att ge korrekta uppskattningar och meddelar betydande ändringar.",
+    "s5h": "5. Kontakt",
+    "s5p": "Support eller frågor om villkoren: ring {phone} eller kontakta oss via WhatsApp."
+  },
+  "booking": {
+    "stepDetails": "Uppgifter",
+    "stepPayment": "Betalning",
+    "stepConfirm": "Bekräfta",
+    "arlandaAirport": "Arlanda flygplats, Stockholm",
+    "serviceType_airport_pickup": "Flygplats­hämtning",
+    "serviceType_airport_dropoff": "Körning till flygplats",
+    "serviceType_city_tour": "Stadsrundtur",
+    "serviceType_custom_route": "Specialrutt",
+    "passengerDetails": "Passagerar­uppgifter",
+    "distanceCalculator": "Avstånds­kalkylator (upp till {maxKm} km)",
+    "enterAddresses": "Ange hämtning och avlämning för att se ruttens längd",
+    "calculating": "Beräknar…",
+    "distanceWithin": "Avstånd: {km} km ✓ (inom gräns)",
+    "durationApprox": "~{minutes} min",
+    "distanceExceeds": "Avståndet {km} km överstiger gränsen {maxKm} km. Kontakta oss för längre resor.",
+    "pickupWithinArea": "✓ Hämtning inom service­område ({km} km från flygplatsen)",
+    "dropoffWithinArea": "✓ Avlämning inom service­område ({km} km från flygplatsen)",
+    "predefinedPackage": "Förifyllt för detta paket",
+    "fullNameLabel": "Fullständigt namn *",
+    "fullNamePh": "Anna Andersson",
+    "emailLabel": "E‑post *",
+    "emailPh": "anna@exempel.se",
+    "phoneLabel": "Telefon *",
+    "phonePh": "+46 70 123 45 67",
+    "serviceTypeLabel": "Tjänst *",
+    "pickupDateLabel": "Hämtningsdatum *",
+    "selectDatePh": "Välj datum",
+    "pickupTimeLabel": "Hämtningstid *",
+    "passengersLabel": "Passagerare *",
+    "pickupLocationLabel": "Hämtningsadress *",
+    "dropoffLocationLabel": "Avlämningsadress *",
+    "addressPlaceholder": "Börja skriva en adress i Sverige",
+    "yourMessageLabel": "Meddelande",
+    "yourMessagePh": "Särskilda önskemål?",
+    "validating": "Kontrollerar...",
+    "requestQuote": "Begär offert →",
+    "nextPayment": "Nästa → Betalning",
+    "bookingSummary": "Bokningsöversikt",
+    "serviceChip": "Tjänst",
+    "taxiBooking": "Taxibokning",
+    "routeChip": "Rutt",
+    "scheduleChip": "Tid",
+    "passengersChip": "Passagerare",
+    "totalChip": "Totalt",
+    "completePayment": "SLUTFÖR BETALNING",
+    "secureRide": "Slutför betalningen för att säkra din resa",
+    "paymentInfo": "Betalnings­information",
+    "choosePayment": "Välj betalsätt",
+    "card": "Kort",
+    "amazonPay": "Amazon Pay",
+    "secureBadge": "SÄKERT",
+    "cardNumberPh": "Kortnummer",
+    "expiryPh": "MM/ÅÅ",
+    "cvcPh": "CVC",
+    "encrypted": "Din betalnings­information krypteras och hanteras säkert",
+    "back": "← Tillbaka",
+    "processing": "Bearbetar...",
+    "payAmount": "Betala {amount}",
+    "quoteReceivedTitle": "Offertförfrågan mottagen!",
+    "quoteReceivedBody": "Vi skickar offerten via e‑post eller SMS.",
+    "bookingConfirmedTitle": "Bokning bekräftad!",
+    "bookingConfirmedBody": "Vi har tagit emot din bokning. Du får snart en bekräftelse via e‑post.",
+    "summaryMini": "Bokningsöversikt",
+    "routeSummary": "Rutt: {pickup} → {dropoff}",
+    "dateSummary": "Datum: {date}",
+    "timeSummary": "Tid: {time}",
+    "passengersSummary": "Passagerare: {passengers}",
+    "totalSummary": "Totalt: {price}",
+    "done": "Klar",
+    "backToHomeAria": "Till startsidan",
+    "bookAnotherAria": "Boka en ny resa"
+  }
+}

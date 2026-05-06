@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plane,
@@ -13,6 +14,7 @@ import {
 } from "lucide-react";
 import { SERVICES } from "@/lib/constants";
 import type { ServiceId } from "@/lib/constants";
+import { serviceIdToMessageKey } from "@/lib/service-messages";
 import { COMPANY } from "@/lib/site";
 
 const icons: Record<string, LucideIcon> = {
@@ -24,12 +26,6 @@ const icons: Record<string, LucideIcon> = {
 
 const WHATSAPP_DIGITS = COMPANY.whatsappDigits;
 const TEL_HREF = COMPANY.phoneE164;
-
-const steps = [
-  { num: 1 as const, label: "Choose Service" },
-  { num: 2 as const, label: "Your Details" },
-  { num: 3 as const, label: "Confirm" },
-];
 
 type Step = 1 | 2 | 3;
 
@@ -51,36 +47,22 @@ const initialForm: FormState = {
   notes: "",
 };
 
-function buildWhatsAppMessage(
-  serviceId: ServiceId,
-  form: FormState,
-): string {
-  const service = SERVICES.find((s) => s.id === serviceId)!;
-  const lines = [
-    `🚖 Booking request — ${COMPANY.legalName}`,
-    COMPANY.brandTitle,
-    "",
-    `Service: ${service.name}`,
-    `Route / details: ${service.description}`,
-    `Price: ${service.priceLabel}`,
-    "",
-    `Name: ${form.fullName}`,
-    `Phone: ${form.phone}`,
-    `Date: ${form.date}`,
-    `Time: ${form.time}`,
-    `Passengers: ${form.passengers}`,
+function StepIndicator({
+  step,
+  labels,
+}: {
+  step: Step;
+  labels: readonly [string, string, string];
+}) {
+  const stepsMeta = [
+    { num: 1 as const, label: labels[0] },
+    { num: 2 as const, label: labels[1] },
+    { num: 3 as const, label: labels[2] },
   ];
-  if (form.notes.trim()) {
-    lines.push("", `Notes: ${form.notes.trim()}`);
-  }
-  return lines.join("\n");
-}
-
-function StepIndicator({ step }: { step: Step }) {
   return (
     <div className="mb-10 w-full px-1">
       <div className="flex items-start justify-between gap-1 sm:gap-2">
-        {steps.map((s, i) => {
+        {stepsMeta.map((s, i) => {
           const isActive = step === s.num;
           const isComplete = step > s.num;
           return (
@@ -113,7 +95,7 @@ function StepIndicator({ step }: { step: Step }) {
                   {s.label}
                 </span>
               </div>
-              {i < steps.length - 1 ? (
+              {i < stepsMeta.length - 1 ? (
                 <div
                   className="mx-0.5 mt-[1.125rem] h-px min-w-[12px] flex-1 self-start bg-neutral-300 sm:mx-1 sm:mt-5"
                   aria-hidden
@@ -131,6 +113,11 @@ const inputClass =
   "w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-[var(--book-wizard-text)] shadow-sm placeholder:text-neutral-400 focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/35 sm:text-base";
 
 export default function BookYourRide() {
+  const t = useTranslations("bookYourRide");
+  const tSvc = useTranslations("services");
+  const tSite = useTranslations("site");
+  const twa = useTranslations("bookYourRide.wa");
+
   const [step, setStep] = useState<Step>(1);
   const [selectedId, setSelectedId] = useState<ServiceId | null>(null);
   const [form, setForm] = useState<FormState>(initialForm);
@@ -147,12 +134,39 @@ export default function BookYourRide() {
     form.time.length > 0;
 
   const whatsappHref = useMemo(() => {
-    if (!selectedId) return "#";
-    const text = buildWhatsAppMessage(selectedId, form);
+    if (!selectedId || !selectedService) return "#";
+    const service = selectedService;
+    const k = serviceIdToMessageKey(selectedId);
+    const name = tSvc(`${k}.name`);
+    const desc = tSvc(`${k}.description`);
+    const lines = [
+      twa("title", { company: COMPANY.legalName }),
+      twa("brand", { brand: tSite("brandTitle") }),
+      "",
+      `${twa("service")}: ${name}`,
+      `${twa("route")}: ${desc}`,
+      `${twa("price")}: ${service.priceLabel ?? ""}`,
+      "",
+      `${twa("name")}: ${form.fullName}`,
+      `${twa("phone")}: ${form.phone}`,
+      `${twa("date")}: ${form.date}`,
+      `${twa("time")}: ${form.time}`,
+      `${twa("passengers")}: ${form.passengers}`,
+    ];
+    if (form.notes.trim()) {
+      lines.push("", `${twa("notes")}: ${form.notes.trim()}`);
+    }
+    const text = lines.join("\n");
     return `https://wa.me/${WHATSAPP_DIGITS}?text=${encodeURIComponent(text)}`;
-  }, [selectedId, form]);
+  }, [selectedId, selectedService, form, tSvc, tSite, twa]);
 
   const minDate = new Date().toISOString().split("T")[0];
+
+  const stepLabels = [
+    t("steps.choose"),
+    t("steps.details"),
+    t("steps.confirm"),
+  ] as const;
 
   return (
     <section
@@ -162,18 +176,18 @@ export default function BookYourRide() {
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:max-w-4xl lg:px-8">
         <div className="text-center">
           <span className="font-heading inline-block rounded-full bg-[var(--accent)] px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-[var(--book-wizard-text)] sm:text-sm">
-            SERVICES
+            {t("kicker")}
           </span>
           <h2 className="mt-2 font-heading text-2xl font-bold text-[var(--book-wizard-text)] sm:text-3xl md:text-4xl">
-            Book Your Ride
+            {t("title")}
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-sm text-neutral-600 sm:text-base">
-            Choose your service and get instant booking
+            {t("subtitle")}
           </p>
         </div>
 
         <div className="mt-10 rounded-2xl border border-neutral-200/80 bg-white p-5 shadow-sm sm:p-8 md:p-10">
-          <StepIndicator step={step} />
+          <StepIndicator step={step} labels={stepLabels} />
 
           <AnimatePresence mode="wait">
             {step === 1 ? (
@@ -188,6 +202,7 @@ export default function BookYourRide() {
                   {SERVICES.map((service) => {
                     const Icon = icons[service.icon] || MapPin;
                     const isSelected = selectedId === service.id;
+                    const mk = serviceIdToMessageKey(service.id);
                     return (
                       <button
                         key={service.id}
@@ -201,17 +216,17 @@ export default function BookYourRide() {
                       >
                         {service.popular ? (
                           <span className="absolute right-2 top-2 rounded-full bg-[var(--accent)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-[var(--book-wizard-text)] sm:right-3 sm:top-3 sm:text-[10px]">
-                            Popular
+                            {t("popular")}
                           </span>
                         ) : null}
                         <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--book-wizard-text)]">
                           <Icon className="h-5 w-5" strokeWidth={1.75} />
                         </div>
                         <h3 className="pr-12 font-heading text-xs font-bold uppercase tracking-wide text-[var(--book-wizard-text)] sm:pr-14 sm:text-sm">
-                          {service.name}
+                          {tSvc(`${mk}.name`)}
                         </h3>
                         <p className="mt-2 text-[11px] leading-snug text-neutral-600 sm:text-xs">
-                          {service.description}
+                          {tSvc(`${mk}.description`)}
                         </p>
                         <p className="mt-3 text-sm font-bold text-[var(--book-wizard-text)] sm:text-base">
                           {service.priceLabel}
@@ -228,7 +243,7 @@ export default function BookYourRide() {
                       onClick={() => setStep(2)}
                       className="inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-6 py-3 text-sm font-bold uppercase tracking-wide text-[var(--book-wizard-text)] shadow-sm transition hover:bg-[var(--accent-hover)] sm:text-base"
                     >
-                      Next
+                      {t("next")}
                       <span aria-hidden>→</span>
                     </button>
                   </div>
@@ -246,8 +261,7 @@ export default function BookYourRide() {
               >
                 <div className="mb-6 flex items-center gap-2 rounded-xl border border-neutral-200 bg-[var(--book-wizard-bg)] px-4 py-3 text-sm text-[var(--book-wizard-text)] sm:text-base">
                   {(() => {
-                    const SummaryIcon =
-                      icons[selectedService.icon] ?? MapPin;
+                    const SummaryIcon = icons[selectedService.icon] ?? MapPin;
                     return (
                       <SummaryIcon
                         className="h-4 w-4 shrink-0 text-[var(--accent)]"
@@ -257,7 +271,9 @@ export default function BookYourRide() {
                     );
                   })()}
                   <span>
-                    <span className="font-semibold">{selectedService.name}</span>
+                    <span className="font-semibold">
+                      {tSvc(`${serviceIdToMessageKey(selectedService.id)}.name`)}
+                    </span>
                     <span className="text-neutral-500"> — </span>
                     <span className="font-bold text-[var(--book-wizard-text)]">
                       {selectedService.priceLabel}
@@ -271,7 +287,7 @@ export default function BookYourRide() {
                       htmlFor="wizard-name"
                       className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--book-wizard-text)]"
                     >
-                      Name
+                      {t("name")}
                     </label>
                     <input
                       id="wizard-name"
@@ -289,7 +305,7 @@ export default function BookYourRide() {
                       htmlFor="wizard-phone"
                       className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--book-wizard-text)]"
                     >
-                      Phone number
+                      {t("phone")}
                     </label>
                     <input
                       id="wizard-phone"
@@ -307,7 +323,7 @@ export default function BookYourRide() {
                       htmlFor="wizard-date"
                       className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--book-wizard-text)]"
                     >
-                      Date
+                      {t("date")}
                     </label>
                     <input
                       id="wizard-date"
@@ -325,7 +341,7 @@ export default function BookYourRide() {
                       htmlFor="wizard-time"
                       className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--book-wizard-text)]"
                     >
-                      Time
+                      {t("time")}
                     </label>
                     <input
                       id="wizard-time"
@@ -342,7 +358,7 @@ export default function BookYourRide() {
                       htmlFor="wizard-passengers"
                       className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--book-wizard-text)]"
                     >
-                      Passengers
+                      {t("passengers")}
                     </label>
                     <select
                       id="wizard-passengers"
@@ -367,10 +383,8 @@ export default function BookYourRide() {
                       htmlFor="wizard-notes"
                       className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--book-wizard-text)]"
                     >
-                      Notes / Special requests{" "}
-                      <span className="font-normal normal-case text-neutral-500">
-                        (optional)
-                      </span>
+                      {t("notesLabel")}{" "}
+                      <span className="font-normal normal-case text-neutral-500">{t("notesOptional")}</span>
                     </label>
                     <textarea
                       id="wizard-notes"
@@ -379,7 +393,7 @@ export default function BookYourRide() {
                       onChange={(e) =>
                         setForm((f) => ({ ...f, notes: e.target.value }))
                       }
-                      placeholder="e.g. flight number, luggage info"
+                      placeholder={t("notesPlaceholder")}
                       className={`${inputClass} resize-y min-h-[5rem]`}
                     />
                   </div>
@@ -391,7 +405,7 @@ export default function BookYourRide() {
                     onClick={() => setStep(1)}
                     className="text-sm font-semibold text-neutral-600 underline-offset-4 transition hover:text-[var(--book-wizard-text)] hover:underline"
                   >
-                    ← Back
+                    {t("back")}
                   </button>
                   <button
                     type="button"
@@ -399,7 +413,7 @@ export default function BookYourRide() {
                     onClick={() => setStep(3)}
                     className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-6 py-3 text-sm font-bold uppercase tracking-wide text-[var(--book-wizard-text)] shadow-sm transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-45 sm:text-base"
                   >
-                    Next
+                    {t("next")}
                     <span aria-hidden>→</span>
                   </button>
                 </div>
@@ -416,44 +430,44 @@ export default function BookYourRide() {
               >
                 <div className="rounded-2xl border border-neutral-200 bg-[var(--book-wizard-bg)] p-5 sm:p-6">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500">
-                    Booking summary
+                    {t("bookingSummary")}
                   </h3>
                   <dl className="mt-4 space-y-3 text-sm text-[var(--book-wizard-text)] sm:text-base">
                     <div className="flex justify-between gap-4 border-b border-neutral-200/80 pb-3">
-                      <dt className="text-neutral-600">Service</dt>
+                      <dt className="text-neutral-600">{t("summaryService")}</dt>
                       <dd className="text-right font-semibold">
-                        {selectedService.name}
+                        {tSvc(`${serviceIdToMessageKey(selectedService.id)}.name`)}
                       </dd>
                     </div>
                     <div className="flex justify-between gap-4 border-b border-neutral-200/80 pb-3">
-                      <dt className="text-neutral-600">Price</dt>
+                      <dt className="text-neutral-600">{t("summaryPrice")}</dt>
                       <dd className="text-right font-bold text-[var(--book-wizard-text)]">
                         {selectedService.priceLabel}
                       </dd>
                     </div>
                     <div className="flex justify-between gap-4 border-b border-neutral-200/80 pb-3">
-                      <dt className="text-neutral-600">Name</dt>
+                      <dt className="text-neutral-600">{t("summaryName")}</dt>
                       <dd className="text-right font-medium">{form.fullName}</dd>
                     </div>
                     <div className="flex justify-between gap-4 border-b border-neutral-200/80 pb-3">
-                      <dt className="text-neutral-600">Phone</dt>
+                      <dt className="text-neutral-600">{t("summaryPhone")}</dt>
                       <dd className="text-right font-medium">{form.phone}</dd>
                     </div>
                     <div className="flex justify-between gap-4 border-b border-neutral-200/80 pb-3">
-                      <dt className="text-neutral-600">Date &amp; time</dt>
+                      <dt className="text-neutral-600">{t("summaryDateTime")}</dt>
                       <dd className="text-right font-medium">
                         {form.date} · {form.time}
                       </dd>
                     </div>
                     <div className="flex justify-between gap-4 border-b border-neutral-200/80 pb-3">
-                      <dt className="text-neutral-600">Passengers</dt>
+                      <dt className="text-neutral-600">{t("summaryPassengers")}</dt>
                       <dd className="text-right font-medium">
                         {form.passengers}
                       </dd>
                     </div>
                     {form.notes.trim() ? (
                       <div className="pt-1">
-                        <dt className="text-neutral-600">Notes</dt>
+                        <dt className="text-neutral-600">{t("summaryNotes")}</dt>
                         <dd className="mt-1 text-neutral-800">{form.notes}</dd>
                       </div>
                     ) : null}
@@ -467,19 +481,19 @@ export default function BookYourRide() {
                     rel="noopener noreferrer"
                     className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-6 py-4 text-center text-sm font-bold uppercase tracking-wide text-[var(--book-wizard-text)] shadow-sm transition hover:bg-[var(--accent-hover)] sm:text-base"
                   >
-                    Book via WhatsApp
+                    {t("whatsappBook")}
                     <span aria-hidden>→</span>
                   </a>
                   <a
                     href={`tel:${TEL_HREF}`}
                     className="inline-flex w-full items-center justify-center rounded-full border-2 border-[var(--book-wizard-text)] bg-transparent px-6 py-3.5 text-sm font-bold uppercase tracking-wide text-[var(--book-wizard-text)] transition hover:bg-[var(--book-wizard-text)]/5 sm:text-base"
                   >
-                    Call to book
+                    {t("callBook")}
                   </a>
                 </div>
 
                 <p className="mt-4 text-center text-xs text-neutral-500 sm:text-sm">
-                  Fixed price. No surge. All inclusive.
+                  {t("footerTrust")}
                 </p>
 
                 <div className="mt-8 flex justify-start">
@@ -488,7 +502,7 @@ export default function BookYourRide() {
                     onClick={() => setStep(2)}
                     className="text-sm font-semibold text-neutral-600 underline-offset-4 transition hover:text-[var(--book-wizard-text)] hover:underline"
                   >
-                    ← Back
+                    {t("back")}
                   </button>
                 </div>
               </motion.div>
@@ -505,11 +519,10 @@ export default function BookYourRide() {
               />
               <div>
                 <p className="font-heading text-sm font-semibold text-[var(--book-wizard-text)]">
-                  Will the driver wait for my flight?
+                  {t("faq1q")}
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-neutral-600">
-                  Yes. We track arrivals and adjust pickup time if you&apos;re
-                  delayed — no extra stress after landing.
+                  {t("faq1a")}
                 </p>
               </div>
             </div>
@@ -522,12 +535,9 @@ export default function BookYourRide() {
               />
               <div>
                 <p className="font-heading text-sm font-semibold text-[var(--book-wizard-text)]">
-                  Fixed price guarantee
+                  {t("faq2q")}
                 </p>
-                <p className="mt-2 text-sm leading-relaxed text-neutral-600">
-                  The price you see is what you pay — no surge pricing or hidden
-                  fees for airport transfers.
-                </p>
+                <p className="mt-2 text-sm leading-relaxed text-neutral-600">{t("faq2a")}</p>
               </div>
             </div>
           </div>

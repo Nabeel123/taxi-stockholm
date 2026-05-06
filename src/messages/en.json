@@ -1,0 +1,362 @@
+{
+  "metadata": {
+    "title": "Airport taxi — Stockholm, Arlanda & Skavsta | Sahotra Services AB",
+    "description": "Fixed-price rides to and from Stockholm, Arlanda (ARN), and Skavsta Airport. 24/7 booking, professional drivers, premium environment-friendly vehicles."
+  },
+  "site": {
+    "brandTitle": "Taxi to or from Stockholm to Arlanda and Skavsta Airport",
+    "description": "Premium rides across Stockholm and Arlanda. Reliable airport transfers, city trips, and more. Fixed prices, 24/7 booking, professional drivers — a project of Sahotra Services AB.",
+    "vehicleTagline": "Premium, environment‑friendly vehicles — comfortable rides with lower environmental impact.",
+    "vehicleShort": "Premium eco-friendly vehicle",
+    "vastervasOffer": "Västerås ↔ Arlanda / Stockholm — 1000 SEK fixed price",
+    "licensedInsured": "Licensed & insured"
+  },
+  "common": {
+    "quote": "Quote",
+    "loading": "Loading…",
+    "min": "min",
+    "km": "km"
+  },
+  "language": {
+    "switchToSv": "Svenska",
+    "switchToEn": "English",
+    "label": "Language"
+  },
+  "header": {
+    "home": "Home",
+    "about": "About",
+    "services": "Services",
+    "reviews": "Reviews",
+    "bookNow": "Book Now",
+    "toggleMenu": "Toggle menu",
+    "homeAria": "Home"
+  },
+  "footer": {
+    "rights": "All rights reserved.",
+    "quickLinks": "Quick links",
+    "contact": "Contact",
+    "followUs": "Follow us",
+    "facebook": "Facebook",
+    "instagram": "Instagram",
+    "whatsapp": "WhatsApp",
+    "reviews": "Reviews",
+    "bookNow": "Book now",
+    "about": "About",
+    "services": "Services",
+    "workAt": "Work at {company}",
+    "privacy": "Privacy policy",
+    "terms": "Terms of service"
+  },
+  "hero": {
+    "pickupPlaceholder": "Pickup address",
+    "dropoffPlaceholder": "Drop-off address",
+    "trustRating": "5.0 rating",
+    "trustRides": "1000+ rides",
+    "trustFixed": "Fixed prices",
+    "contactPrompt": "Prefer to talk?",
+    "callLabel": "Call {phone}",
+    "whatsapp": "WhatsApp",
+    "bookingCardTitle": "Get a price in seconds",
+    "primaryCta": "Get price"
+  },
+  "bookYourRide": {
+    "kicker": "Services",
+    "title": "Book Your Ride",
+    "subtitle": "Choose your service and get instant booking",
+    "popular": "Popular",
+    "next": "Next",
+    "back": "← Back",
+    "name": "Name",
+    "phone": "Phone number",
+    "date": "Date",
+    "time": "Time",
+    "passengers": "Passengers",
+    "notesOptional": "(optional)",
+    "notesLabel": "Notes / Special requests",
+    "notesPlaceholder": "e.g. flight number, luggage info",
+    "bookingSummary": "Booking summary",
+    "summaryService": "Service",
+    "summaryPrice": "Price",
+    "summaryName": "Name",
+    "summaryPhone": "Phone",
+    "summaryDateTime": "Date & time",
+    "summaryPassengers": "Passengers",
+    "summaryNotes": "Notes",
+    "whatsappBook": "Book via WhatsApp",
+    "callBook": "Call to book",
+    "footerTrust": "Fixed price. No surge. All inclusive.",
+    "faq1q": "Will the driver wait for my flight?",
+    "faq1a": "Yes. We track arrivals and adjust pickup time if you're delayed — no extra stress after landing.",
+    "faq2q": "Fixed price guarantee",
+    "faq2a": "The price you see is what you pay — no surge pricing or hidden fees for airport transfers.",
+    "steps": {
+      "choose": "Choose Service",
+      "details": "Your Details",
+      "confirm": "Confirm"
+    },
+    "wa": {
+      "title": "🚖 Booking request — {company}",
+      "brand": "{brand}",
+      "service": "Service",
+      "route": "Route / details",
+      "price": "Price",
+      "name": "Name",
+      "phone": "Phone",
+      "date": "Date",
+      "time": "Time",
+      "passengers": "Passengers",
+      "notes": "Notes"
+    }
+  },
+  "services": {
+    "airport_pickup": {
+      "name": "Airport Pickup",
+      "displayName": "Arlanda to City",
+      "description": "Arlanda → City Center",
+      "tagline": "Fixed price. No surge. All inclusive.",
+      "duration": "45-60 min",
+      "route": "Direct route",
+      "features": ["Fixed price", "Flight tracking", "On-time guarantee"],
+      "ctaLabel": "BOOK AIRPORT PICKUP"
+    },
+    "airport_dropoff": {
+      "name": "Airport Drop‑off",
+      "displayName": "City to Arlanda",
+      "description": "City Center → Arlanda",
+      "tagline": "Fixed price. Flight tracking. On-time guarantee.",
+      "duration": "45-60 min",
+      "route": "Door to door",
+      "features": ["Fixed price", "Flight tracking", "On-time guarantee"],
+      "ctaLabel": "BOOK AIRPORT TRANSFER"
+    },
+    "city_tour": {
+      "name": "City Tour",
+      "displayName": "City Tour",
+      "description": "4 hours city exploration",
+      "tagline": "Professional guide. Photo stops included.",
+      "duration": "4 Hours",
+      "route": "6+ Stops",
+      "extraLabel": "Guide",
+      "features": ["4 hours duration", "6+ locations", "Professional guide", "Photo stops"],
+      "highlights": ["Gamla Stan Walking", "Vasa Museum", "Photo Stops", "Royal Palace", "Modern Districts", "Professional Guide"],
+      "ctaLabel": "BOOK CITY TOUR"
+    },
+    "custom_route": {
+      "name": "Custom Route",
+      "displayName": "Custom Route",
+      "description": "Any Stockholm destination",
+      "tagline": "Flexible routes tailored to your needs.",
+      "duration": "Flexible",
+      "route": "Custom stops",
+      "features": ["Flexible", "Any distance", "Custom stops"],
+      "ctaLabel": "GET QUOTE & BOOK"
+    }
+  },
+  "about": {
+    "bookNow": "Book now",
+    "imageAlt": "Premium taxi — vehicle and city setting",
+    "pickupLine": "Pickup in",
+    "pickupEta": "about 5 min",
+    "pickupSub": "Premium eco-friendly vehicle · Alexander",
+    "features": [
+      {
+        "title": "English & Swedish speaking chauffeurs",
+        "lines": [
+          "Licensed, insured, and professionally trained drivers.",
+          "Discreet, business-ready service for executives and guests."
+        ]
+      },
+      {
+        "title": "Stockholm, Arlanda & Skavsta",
+        "lines": [
+          "Fixed-price airport routes and comfortable city rides.",
+          "Book on the website or WhatsApp — we're here 24/7."
+        ]
+      },
+      {
+        "title": "Driven by professionals",
+        "lines": ["Experienced drivers focused on safety and punctuality."]
+      }
+    ]
+  },
+  "cta": {
+    "availableNow": "AVAILABLE NOW",
+    "bannerBook": "Book from the",
+    "bannerWebsite": "website",
+    "bannerOr": "or",
+    "bannerWhatsapp": "WhatsApp.",
+    "bookOnline": "Book online",
+    "needRide": "Need a ride right now?",
+    "sublead": "Fast pickups across Stockholm and airport routes — professional drivers and a premium environment-friendly fleet.",
+    "driversAvailable": "Drivers available now — Stockholm & airport transfers",
+    "ridesCompleted": "2,400+ rides completed",
+    "bookOnlineCaps": "Book Online",
+    "orCallUs": "Or call us",
+    "callAria": "Call {phone}",
+    "avgResponse": "Avg. response",
+    "pickupTime": "Pickup time",
+    "arlandaFixedPrice": "Arlanda fixed price",
+    "arlandaTooltipAria": "About Arlanda fixed price: one-way fare between Stockholm city center and Arlanda Airport (ARN), no surge.",
+    "arlandaTooltipBody": "One-way fixed fare between Stockholm city center and Arlanda Airport (ARN). No surge or hidden fees.",
+    "responseValue": "2 min",
+    "pickupValue": "5 min",
+    "secpayPlaceholder": "595 SEK"
+  },
+  "testimonials": {
+    "kicker": "Testimonials",
+    "title": "What People Say",
+    "subtitle": "Trusted by Stockholm's professionals and travelers",
+    "googleReview": "Google review",
+    "prevAria": "Previous reviews",
+    "nextAria": "Next reviews",
+    "trustIndicators": [
+      { "value": "5.0", "label": "Average rating" },
+      { "value": "1000+", "label": "Happy customers" },
+      { "value": "24/7", "label": "Always on call" }
+    ],
+    "items": [
+      {
+        "quote": "Exceptional service. Always on time, professional drivers, and transparent pricing. My go-to for airport transfers.",
+        "name": "Erik Andersson",
+        "title": "Business Executive"
+      },
+      {
+        "quote": "Clean vehicles, reliable service, and no surprises with pricing. Perfect for Stockholm business trips.",
+        "name": "Anna Lindström",
+        "title": "Frequent Traveler"
+      },
+      {
+        "quote": "We recommend Taxi to all our guests. Professional, punctual, and premium quality every time.",
+        "name": "Marcus Johansson",
+        "title": "Hotel Manager"
+      },
+      {
+        "quote": "Smooth booking and a quiet, comfortable ride every time. Drivers know the city inside out.",
+        "name": "Lisa Berg",
+        "title": "Consultant"
+      },
+      {
+        "quote": "Met me at the gate with a sign, helped with bags, and got me to my meeting with time to spare. Highly recommend.",
+        "name": "Jonas Holm",
+        "title": "Sales Director"
+      },
+      {
+        "quote": "Used them for a family trip to Arlanda — car seat ready, friendly driver, and the fixed fare made budgeting easy.",
+        "name": "Sofia Nordin",
+        "title": "Parent of two"
+      },
+      {
+        "quote": "Late flight, heavy rain, still there waiting. Communication over WhatsApp was clear and quick. Five stars.",
+        "name": "David Chen",
+        "title": "Product Designer"
+      }
+    ]
+  },
+  "bookPage": {
+    "title": "Book your ride",
+    "subtitle": "Complete your booking details",
+    "backAria": "Back",
+    "backToHomeAria": "Back to home"
+  },
+  "privacy": {
+    "backToHome": "← Back to home",
+    "lastUpdated": "Last updated:",
+    "title": "Privacy Policy",
+    "s1h": "1. Information We Collect",
+    "s1p": "We collect information you provide when booking a ride, including your name, email address, phone number, pickup and drop-off locations, and any special instructions. This information is used solely to provide our taxi services and improve your experience.",
+    "s2h": "2. How We Use Your Information",
+    "s2p": "Your information is used to process bookings, communicate with you about your ride, and ensure driver coordination. We do not sell or share your personal data with third parties for marketing purposes.",
+    "s3h": "3. Data Security",
+    "s3p": "We implement appropriate technical and organisational measures to protect your personal data against unauthorised access, alteration, disclosure, or destruction.",
+    "s4h": "4. Contact Us",
+    "s4p": "For questions about this privacy policy or your data, contact us at {phone} or via our contact form."
+  },
+  "terms": {
+    "backToHome": "← Back to home",
+    "lastUpdated": "Last updated:",
+    "title": "Terms of Service",
+    "s1h": "1. Service Description",
+    "s1p": "{company} provides premium taxi and transfer services in the Stockholm region, including Arlanda and Skavsta airport routes. Our services include airport transfers, city tours, and custom route bookings. All prices displayed are fixed and in Swedish Kronor (SEK).",
+    "s2h": "2. Booking and Cancellation",
+    "s2p": "Bookings are confirmed upon submission. We recommend cancelling at least 24 hours in advance for airport transfers. Late cancellations may incur fees as specified at the time of booking.",
+    "s3h": "3. Distance Restriction",
+    "s3p": "Our standard service covers routes up to 47 km. For longer distances, please contact us directly for a custom quote.",
+    "s4h": "4. Liability",
+    "s4p": "We are not liable for delays caused by circumstances beyond our control, including traffic, weather, or flight delays. We strive to provide accurate pickup estimates and will communicate any significant changes.",
+    "s5h": "5. Contact",
+    "s5p": "For support or questions about these terms, contact us at {phone} or via WhatsApp."
+  },
+  "booking": {
+    "stepDetails": "Details",
+    "stepPayment": "Payment",
+    "stepConfirm": "Confirm",
+    "arlandaAirport": "Arlanda Airport, Stockholm",
+    "serviceType_airport_pickup": "Airport Pickup",
+    "serviceType_airport_dropoff": "Airport Drop-off",
+    "serviceType_city_tour": "City Tour",
+    "serviceType_custom_route": "Custom Route",
+    "passengerDetails": "Passenger Details",
+    "distanceCalculator": "Distance Calculator (up to {maxKm} KM)",
+    "enterAddresses": "Enter pickup and drop-off to see route distance",
+    "calculating": "Calculating…",
+    "distanceWithin": "Distance: {km} km ✓ (within limit)",
+    "durationApprox": "~{minutes} min",
+    "distanceExceeds": "Distance {km} km exceeds {maxKm} km limit. Please contact us for longer journeys.",
+    "pickupWithinArea": "✓ Pickup within service area ({km} km from airport)",
+    "dropoffWithinArea": "✓ Dropoff within service area ({km} km from airport)",
+    "predefinedPackage": "Predefined for this package",
+    "fullNameLabel": "Full Name *",
+    "fullNamePh": "John Doe",
+    "emailLabel": "Email Address *",
+    "emailPh": "john@example.com",
+    "phoneLabel": "Phone Number *",
+    "phonePh": "+46 700 123 456",
+    "serviceTypeLabel": "Service Type *",
+    "pickupDateLabel": "Pickup Date *",
+    "selectDatePh": "Select date",
+    "pickupTimeLabel": "Pickup Time *",
+    "passengersLabel": "Passengers *",
+    "pickupLocationLabel": "Pickup Location *",
+    "dropoffLocationLabel": "Drop-off Location *",
+    "addressPlaceholder": "Start typing an address in Sweden",
+    "yourMessageLabel": "Your Message",
+    "yourMessagePh": "Any special requests?",
+    "validating": "Validating...",
+    "requestQuote": "Request Quote →",
+    "nextPayment": "Next → Payment",
+    "bookingSummary": "Booking Summary",
+    "serviceChip": "Service",
+    "taxiBooking": "Taxi Booking",
+    "routeChip": "Route",
+    "scheduleChip": "Schedule",
+    "passengersChip": "Passengers",
+    "totalChip": "Total",
+    "completePayment": "COMPLETE PAYMENT",
+    "secureRide": "Complete your payment to secure your ride",
+    "paymentInfo": "Payment Information",
+    "choosePayment": "Choose your preferred payment method",
+    "card": "Card",
+    "amazonPay": "Amazon Pay",
+    "secureBadge": "SECURE",
+    "cardNumberPh": "Card number",
+    "expiryPh": "MM/YY",
+    "cvcPh": "CVC",
+    "encrypted": "Your payment information is encrypted and secure",
+    "back": "← Back",
+    "processing": "Processing...",
+    "payAmount": "Pay {amount}",
+    "quoteReceivedTitle": "Quote Request Received!",
+    "quoteReceivedBody": "We will send you the quote on email or text message.",
+    "bookingConfirmedTitle": "Booking Confirmed!",
+    "bookingConfirmedBody": "We've received your booking. You'll receive a confirmation email shortly.",
+    "summaryMini": "Booking Summary",
+    "routeSummary": "Route: {pickup} → {dropoff}",
+    "dateSummary": "Date: {date}",
+    "timeSummary": "Time: {time}",
+    "passengersSummary": "Passengers: {passengers}",
+    "totalSummary": "Total: {price}",
+    "done": "Done",
+    "backToHomeAria": "Back to home",
+    "bookAnotherAria": "Book another ride"
+  }
+}

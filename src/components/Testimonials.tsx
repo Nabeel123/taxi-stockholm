@@ -1,69 +1,12 @@
 "use client";
 
 import { useCallback, useRef } from "react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Clock, Star, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, Star, Users, type LucideIcon } from "lucide-react";
 
-const testimonials = [
-  {
-    quote:
-      "Exceptional service. Always on time, professional drivers, and transparent pricing. My go-to for airport transfers.",
-    name: "Erik Andersson",
-    title: "Business Executive",
-    avatarUrl: "https://i.pravatar.cc/128?img=12",
-  },
-  {
-    quote:
-      "Clean vehicles, reliable service, and no surprises with pricing. Perfect for Stockholm business trips.",
-    name: "Anna Lindström",
-    title: "Frequent Traveler",
-    avatarUrl: "https://i.pravatar.cc/128?img=45",
-  },
-  {
-    quote:
-      "We recommend Taxi to all our guests. Professional, punctual, and premium quality every time.",
-    name: "Marcus Johansson",
-    title: "Hotel Manager",
-    avatarUrl: "https://i.pravatar.cc/128?img=33",
-  },
-  {
-    quote:
-      "Smooth booking and a quiet, comfortable ride every time. Drivers know the city inside out.",
-    name: "Lisa Berg",
-    title: "Consultant",
-    avatarUrl: "https://i.pravatar.cc/128?img=5",
-  },
-  {
-    quote:
-      "Met me at the gate with a sign, helped with bags, and got me to my meeting with time to spare. Highly recommend.",
-    name: "Jonas Holm",
-    title: "Sales Director",
-    avatarUrl: "https://i.pravatar.cc/128?img=14",
-  },
-  {
-    quote:
-      "Used them for a family trip to Arlanda — car seat ready, friendly driver, and the fixed fare made budgeting easy.",
-    name: "Sofia Nordin",
-    title: "Parent of two",
-    avatarUrl: "https://i.pravatar.cc/128?img=47",
-  },
-  {
-    quote:
-      "Late flight, heavy rain, still there waiting. Communication over WhatsApp was clear and quick. Five stars.",
-    name: "David Chen",
-    title: "Product Designer",
-    avatarUrl: "https://i.pravatar.cc/128?img=68",
-  },
-];
-
-const trustIndicators = [
-  { value: "5.0", label: "Average rating", icon: Star },
-  { value: "1000+", label: "Happy customers", icon: Users },
-  { value: "24/7", label: "Always on call", icon: Clock },
-];
-
-function GoogleReviewBadge() {
+function GoogleReviewBadge({ label }: { label: string }) {
   return (
     <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/25 px-3 py-1.5 text-xs text-white/85">
       <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" aria-hidden>
@@ -84,13 +27,33 @@ function GoogleReviewBadge() {
           d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
         />
       </svg>
-      <span className="font-medium">Google review</span>
+      <span className="font-medium">{label}</span>
     </div>
   );
 }
 
 export default function Testimonials() {
+  const t = useTranslations("testimonials");
   const scrollerRef = useRef<HTMLDivElement>(null);
+
+  const items = (t.raw("items") ?? []) as { quote: string; name: string; title: string; avatarUrl: string }[];
+  const indicators = (
+    (t.raw("trustIndicators") ?? []) as { value: string; label: string }[]
+  ).map((row, idx) => {
+    const icons: LucideIcon[] = [Star, Users, Clock];
+    return { ...row, icon: icons[idx] ?? Star };
+  });
+
+  /** Merge avatar URLs from original static data (URLs not stored per locale). */
+  const avatarsByName: Record<string, string> = {
+    "Erik Andersson": "https://i.pravatar.cc/128?img=12",
+    "Anna Lindström": "https://i.pravatar.cc/128?img=45",
+    "Marcus Johansson": "https://i.pravatar.cc/128?img=33",
+    "Lisa Berg": "https://i.pravatar.cc/128?img=5",
+    "Jonas Holm": "https://i.pravatar.cc/128?img=14",
+    "Sofia Nordin": "https://i.pravatar.cc/128?img=47",
+    "David Chen": "https://i.pravatar.cc/128?img=68",
+  };
 
   const scrollByCards = useCallback((direction: "prev" | "next") => {
     const el = scrollerRef.current;
@@ -115,14 +78,10 @@ export default function Testimonials() {
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div initial={{ opacity: 1, y: 0 }} className="text-center">
           <span className="font-heading inline-block rounded-full bg-[var(--accent)] px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-black sm:text-sm">
-            Testimonials
+            {t("kicker")}
           </span>
-          <h2 className="mt-2 text-2xl font-bold text-white sm:text-3xl md:text-4xl">
-            What People Say
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-sm text-white/70 sm:text-base">
-            Trusted by Stockholm&apos;s professionals and travelers
-          </p>
+          <h2 className="mt-2 text-2xl font-bold text-white sm:text-3xl md:text-4xl">{t("title")}</h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm text-white/70 sm:text-base">{t("subtitle")}</p>
         </motion.div>
 
         <motion.div
@@ -130,7 +89,7 @@ export default function Testimonials() {
           transition={{ duration: 0.4 }}
           className="mx-auto mt-10 flex max-w-4xl flex-wrap justify-center gap-8 sm:mt-12 sm:gap-12 md:gap-16"
         >
-          {trustIndicators.map((ind) => {
+          {indicators.map((ind) => {
             const Icon = ind.icon;
             return (
               <div
@@ -157,7 +116,7 @@ export default function Testimonials() {
               type="button"
               onClick={() => scrollByCards("prev")}
               className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-[#1a2639]/95 text-white shadow-lg backdrop-blur-sm transition hover:bg-[#1a2639] hover:text-[var(--accent)]"
-              aria-label="Previous reviews"
+              aria-label={t("prevAria")}
             >
               <ChevronLeft className="h-5 w-5" aria-hidden />
             </button>
@@ -167,19 +126,18 @@ export default function Testimonials() {
               type="button"
               onClick={() => scrollByCards("next")}
               className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-[#1a2639]/95 text-white shadow-lg backdrop-blur-sm transition hover:bg-[#1a2639] hover:text-[var(--accent)]"
-              aria-label="Next reviews"
+              aria-label={t("nextAria")}
             >
               <ChevronRight className="h-5 w-5" aria-hidden />
             </button>
           </div>
 
-          {/* Mobile nav */}
           <div className="mb-3 flex justify-end gap-2 md:hidden">
             <button
               type="button"
               onClick={() => scrollByCards("prev")}
               className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-[#1a2639]/95 text-white shadow-md transition hover:text-[var(--accent)]"
-              aria-label="Previous reviews"
+              aria-label={t("prevAria")}
             >
               <ChevronLeft className="h-4 w-4" aria-hidden />
             </button>
@@ -187,7 +145,7 @@ export default function Testimonials() {
               type="button"
               onClick={() => scrollByCards("next")}
               className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-[#1a2639]/95 text-white shadow-md transition hover:text-[var(--accent)]"
-              aria-label="Next reviews"
+              aria-label={t("nextAria")}
             >
               <ChevronRight className="h-4 w-4" aria-hidden />
             </button>
@@ -197,40 +155,43 @@ export default function Testimonials() {
             ref={scrollerRef}
             className="flex w-full min-w-0 snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            {testimonials.map((t) => (
-              <article
-                key={t.name}
-                className="relative flex min-h-[280px] shrink-0 grow-0 snap-start flex-col rounded-2xl border border-white/10 bg-[#1a2639]/90 p-5 shadow-lg backdrop-blur-sm sm:min-h-[300px] sm:p-6 md:p-8 basis-[calc((100%-2rem)/3)] md:basis-[calc((100%-3rem)/4)]"
-              >
-                <div className="absolute right-4 top-4 text-5xl font-serif leading-none text-[var(--accent)]/25 sm:text-6xl md:text-7xl">
-                  &ldquo;
-                </div>
-                <div className="flex gap-1 text-[var(--accent)]">
-                  {[...Array(5)].map((_, j) => (
-                    <Star key={j} className="h-4 w-4 fill-current sm:h-5 sm:w-5" />
-                  ))}
-                </div>
-                <GoogleReviewBadge />
-                <p className="relative mt-3 flex-1 text-sm leading-relaxed text-white/85 sm:mt-4 sm:text-base">
-                  {t.quote}
-                </p>
-                <div className="relative mt-5 flex items-center gap-3 border-t border-white/10 pt-5 sm:mt-6 sm:pt-6">
-                  <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full ring-2 ring-[var(--accent)]/40 sm:h-11 sm:w-11">
-                    <Image
-                      src={t.avatarUrl}
-                      alt=""
-                      fill
-                      className="object-cover"
-                      sizes="44px"
-                    />
+            {items.map((row) => {
+              const avatarUrl = avatarsByName[row.name] ?? "https://i.pravatar.cc/128";
+              return (
+                <article
+                  key={`${row.name}-${row.quote.slice(0, 24)}`}
+                  className="relative flex min-h-[280px] shrink-0 grow-0 snap-start flex-col rounded-2xl border border-white/10 bg-[#1a2639]/90 p-5 shadow-lg backdrop-blur-sm sm:min-h-[300px] sm:p-6 md:p-8 basis-[calc((100%-2rem)/3)] md:basis-[calc((100%-3rem)/4)]"
+                >
+                  <div className="absolute right-4 top-4 text-5xl font-serif leading-none text-[var(--accent)]/25 sm:text-6xl md:text-7xl">
+                    &ldquo;
                   </div>
-                  <div>
-                    <p className="font-medium text-white">{t.name}</p>
-                    <p className="text-xs text-white/65 sm:text-sm">{t.title}</p>
+                  <div className="flex gap-1 text-[var(--accent)]">
+                    {[...Array(5)].map((_, j) => (
+                      <Star key={j} className="h-4 w-4 fill-current sm:h-5 sm:w-5" />
+                    ))}
                   </div>
-                </div>
-              </article>
-            ))}
+                  <GoogleReviewBadge label={t("googleReview")} />
+                  <p className="relative mt-3 flex-1 text-sm leading-relaxed text-white/85 sm:mt-4 sm:text-base">
+                    {row.quote}
+                  </p>
+                  <div className="relative mt-5 flex items-center gap-3 border-t border-white/10 pt-5 sm:mt-6 sm:pt-6">
+                    <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full ring-2 ring-[var(--accent)]/40 sm:h-11 sm:w-11">
+                      <Image
+                        src={avatarUrl}
+                        alt=""
+                        fill
+                        className="object-cover"
+                        sizes="44px"
+                      />
+                    </div>
+                    <div>
+                      <p className="font-medium text-white">{row.name}</p>
+                      <p className="text-xs text-white/65 sm:text-sm">{row.title}</p>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </div>
       </div>

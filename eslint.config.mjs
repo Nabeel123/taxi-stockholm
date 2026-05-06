@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Sanity studio build output — huge bundles; not part of Next app lint scope
+    "backend/**",
   ]),
 ]);
 

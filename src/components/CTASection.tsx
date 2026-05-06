@@ -1,17 +1,20 @@
 "use client";
 
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import { Phone, Clock, Car, Shield, Star, MapPin, Info } from "lucide-react";
-import { COMPANY, SITE_VEHICLE_TAGLINE, VASTERVAS_ROUTE_OFFER } from "@/lib/site";
+import { COMPANY } from "@/lib/site";
 
 function ArlandaPriceHint() {
+  const t = useTranslations("cta");
+
   return (
     <span className="group/tooltip relative inline-flex items-center align-middle">
       <button
         type="button"
         className="ml-1 inline-flex shrink-0 rounded p-0.5 text-[var(--accent)] transition-colors hover:text-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--primary)]"
-        aria-label="About Arlanda fixed price: one-way fare between Stockholm city center and Arlanda Airport (ARN), no surge."
+        aria-label={t("arlandaTooltipAria")}
       >
         <Info className="h-3.5 w-3.5" aria-hidden />
       </button>
@@ -20,13 +23,15 @@ function ArlandaPriceHint() {
         role="tooltip"
         className="pointer-events-none invisible absolute bottom-full left-1/2 z-30 mb-2 w-[min(16rem,calc(100vw-2rem))] -translate-x-1/2 rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-left text-xs leading-snug text-white opacity-0 shadow-xl transition-opacity duration-150 group-hover/tooltip:visible group-hover/tooltip:opacity-100 group-focus-within/tooltip:visible group-focus-within/tooltip:opacity-100"
       >
-        One-way fixed fare between Stockholm city center and Arlanda Airport (ARN). No surge or hidden fees.
+        {t("arlandaTooltipBody")}
       </span>
     </span>
   );
 }
 
 export default function CTASection() {
+  const t = useTranslations("cta");
+  const tSite = useTranslations("site");
   const tel = COMPANY.phoneE164.replace(/\s/g, "");
   const waHref = `https://wa.me/${COMPANY.whatsappDigits}`;
 
@@ -45,22 +50,23 @@ export default function CTASection() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
               <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(34,197,94,0.7)]" />
             </span>
-            <span className="text-white">AVAILABLE NOW</span>
+            <span className="text-white">{t("availableNow")}</span>
           </div>
         </div>
 
         <div className="mx-auto mt-8 max-w-3xl rounded-2xl border border-emerald-500/35 bg-emerald-500/10 px-4 py-5 text-center sm:px-6 sm:py-6">
-          <p className="font-heading text-base font-bold text-white sm:text-lg">{VASTERVAS_ROUTE_OFFER}</p>
+          <p className="font-heading text-base font-bold text-white sm:text-lg">{tSite("vastervasOffer")}</p>
           <p className="mt-2 text-sm text-white/85">
-            Book from the <span className="font-semibold text-[var(--accent)]">website</span> or{" "}
-            <span className="font-semibold text-emerald-200">WhatsApp</span>.
+            {t("bannerBook")}{" "}
+            <span className="font-semibold text-[var(--accent)]">{t("bannerWebsite")}</span> {t("bannerOr")}{" "}
+            <span className="font-semibold text-emerald-200">{t("bannerWhatsapp")}</span>
           </p>
           <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/book"
               className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-[var(--secondary)] transition hover:bg-[var(--accent-hover)]"
             >
-              Book online
+              {t("bookOnline")}
             </Link>
             <a
               href={waHref}
@@ -77,11 +83,10 @@ export default function CTASection() {
           id="cta-heading"
           className="mt-10 text-center text-2xl font-bold text-white sm:mt-12 sm:text-3xl md:text-4xl"
         >
-          Need a ride right now?
+          {t("needRide")}
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-center text-base text-white/90 sm:text-lg">
-          Fast pickups across Stockholm and airport routes — professional drivers and a premium
-          environment-friendly fleet.
+          {t("sublead")}
         </p>
 
         <div className="mx-auto mt-8 flex max-w-2xl flex-col items-center gap-4 sm:mt-10">
@@ -90,9 +95,7 @@ export default function CTASection() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-50" />
               <span className="availability-dot relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
             </span>
-            <span className="text-emerald-50">
-              Drivers available now — Stockholm &amp; airport transfers
-            </span>
+            <span className="text-emerald-50">{t("driversAvailable")}</span>
           </div>
           <p className="flex flex-wrap items-center justify-center gap-1 text-sm font-medium text-white/95 sm:text-base">
             <Star
@@ -103,7 +106,7 @@ export default function CTASection() {
             <span className="text-white/50" aria-hidden>
               ·
             </span>
-            <span>2,400+ rides completed</span>
+            <span>{t("ridesCompleted")}</span>
           </p>
         </div>
 
@@ -115,17 +118,17 @@ export default function CTASection() {
                   href="/book"
                   className="inline-flex w-full min-h-[52px] items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-6 py-4 text-base font-extrabold uppercase tracking-wide text-[var(--secondary)] shadow-md transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-[var(--accent-hover)] hover:shadow-lg hover:shadow-[0_0_24px_rgb(255_214_10_/_0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--primary)] active:translate-y-0 sm:text-lg"
                 >
-                  Book Online
+                  {t("bookOnlineCaps")}
                   <span aria-hidden>→</span>
                 </Link>
               </div>
 
               <div className="min-w-0 flex-1 text-center md:text-left">
-                <p className="text-xs font-semibold uppercase tracking-wider text-white/80">Or call us</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-white/80">{t("orCallUs")}</p>
                 <a
                   href={`tel:${tel}`}
                   className="group mt-2 inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-xl px-2 py-3 text-lg font-bold text-white no-underline transition-all duration-200 ease-out hover:scale-[1.02] hover:text-[var(--accent)] hover:shadow-[0_0_24px_rgb(255_214_10_/_0.35)] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--primary)] md:justify-start md:text-xl lg:text-2xl"
-                  aria-label={`Call ${COMPANY.phoneDisplay}`}
+                  aria-label={t("callAria", { phone: COMPANY.phoneDisplay })}
                 >
                   <span
                     className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white/10 text-[var(--accent)] ring-1 ring-white/15 transition-all duration-200 group-hover:bg-[var(--accent)] group-hover:text-[var(--secondary)] group-hover:ring-[var(--accent)]"
@@ -146,9 +149,9 @@ export default function CTASection() {
                 strokeWidth={2}
                 aria-hidden
               />
-              <p className="text-lg font-bold text-white sm:text-xl md:text-2xl">2 min</p>
+              <p className="text-lg font-bold text-white sm:text-xl md:text-2xl">{t("responseValue")}</p>
               <p className="mt-1 text-[11px] font-semibold uppercase leading-tight tracking-wide text-white/90 sm:text-xs">
-                Avg. response
+                {t("avgResponse")}
               </p>
             </div>
             <div className="flex flex-col items-center px-2 py-5 text-center sm:px-4 sm:py-6">
@@ -157,9 +160,9 @@ export default function CTASection() {
                 strokeWidth={2}
                 aria-hidden
               />
-              <p className="text-lg font-bold text-white sm:text-xl md:text-2xl">5 min</p>
+              <p className="text-lg font-bold text-white sm:text-xl md:text-2xl">{t("pickupValue")}</p>
               <p className="mt-1 text-[11px] font-semibold uppercase leading-tight tracking-wide text-white/90 sm:text-xs">
-                Pickup time
+                {t("pickupTime")}
               </p>
             </div>
             <div className="flex flex-col items-center px-2 py-5 text-center sm:px-4 sm:py-6">
@@ -168,10 +171,11 @@ export default function CTASection() {
                 strokeWidth={2}
                 aria-hidden
               />
-              <p className="text-lg font-bold text-white sm:text-xl md:text-2xl">595 SEK</p>
+              <p className="text-lg font-bold text-white sm:text-xl md:text-2xl">{t("secpayPlaceholder")}</p>
               <p className="mt-1 flex flex-wrap items-center justify-center gap-1 text-[11px] font-semibold uppercase leading-tight tracking-wide text-white/90 sm:text-xs">
                 <span>
-                  <span aria-hidden>· </span>Arlanda fixed price
+                  <span aria-hidden>· </span>
+                  {t("arlandaFixedPrice")}
                 </span>
                 <ArlandaPriceHint />
               </p>
@@ -181,11 +185,11 @@ export default function CTASection() {
 
         <p className="mt-8 flex flex-wrap items-center justify-center gap-2 text-center text-sm text-white/80">
           <MapPin className="h-8 w-8 shrink-0 text-[var(--accent)]" aria-hidden strokeWidth={2} />
-          <span>{SITE_VEHICLE_TAGLINE}</span>
+          <span>{tSite("vehicleTagline")}</span>
           <span className="text-white/40" aria-hidden>
             ·
           </span>
-          <span>Licensed &amp; insured</span>
+          <span>{tSite("licensedInsured")}</span>
         </p>
       </div>
     </motion.section>

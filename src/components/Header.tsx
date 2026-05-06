@@ -1,23 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { Link, usePathname } from "@/i18n/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
-
-const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/#about", label: "About" },
-  { href: "/#services", label: "Services" },
-  { href: "/#reviews", label: "Reviews" },
-];
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default function Header() {
+  const t = useTranslations("header");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+  const navLinks = [
+    { href: "/", label: t("home") },
+    { href: "/#about", label: t("about") },
+    { href: "/#services", label: t("services") },
+    { href: "/#reviews", label: t("reviews") },
+  ] as const;
+
+  const handleNavClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    href: string,
+  ) => {
     if (pathname === "/") {
       if (href === "/") {
         e.preventDefault();
@@ -40,9 +45,9 @@ export default function Header() {
         <Link
           href="/"
           className="flex shrink-0 items-center"
-          aria-label="Home"
+          aria-label={t("homeAria")}
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded bg-[var(--accent)] sm:h-9 sm:w-9">
+          <div className="flex h-8 w-8 items-center justify-center rounded bg-accent sm:h-9 sm:w-9">
             <svg
               className="h-4 w-4 text-black sm:h-5 sm:w-5"
               viewBox="0 0 24 24"
@@ -63,25 +68,26 @@ export default function Header() {
               key={link.href}
               href={link.href}
               onClick={(e) => handleNavClick(e, link.href)}
-              className="text-sm font-medium uppercase tracking-wide text-neutral-600 transition-colors duration-300 ease-out hover:text-[var(--dark-slate)]"
+              className="text-sm font-medium uppercase tracking-wide text-neutral-600 transition-colors duration-300 ease-out hover:text-primary"
             >
               {link.label}
             </Link>
           ))}
         </nav>
 
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+          <LanguageSwitcher />
           <Link
             href="/book"
-            className="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-bold uppercase tracking-wide text-black shadow-md transition-all duration-300 ease-out hover:bg-[var(--accent-hover)] hover:shadow-lg sm:px-5 sm:py-2.5"
+            className="rounded-lg bg-accent px-4 py-2 text-sm font-bold uppercase tracking-wide text-black shadow-md transition-all duration-300 ease-out hover:bg-accent-hover hover:shadow-lg sm:px-5 sm:py-2.5"
           >
-            Book Now
+            {t("bookNow")}
           </Link>
           <button
             type="button"
-            className="-m-2 p-2 text-neutral-600 hover:text-[var(--dark-slate)] lg:hidden"
+            className="-m-2 p-2 text-neutral-600 hover:text-primary lg:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle menu"
+            aria-label={t("toggleMenu")}
           >
             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
@@ -102,7 +108,7 @@ export default function Header() {
                   key={link.href}
                   href={link.href}
                   onClick={(e) => handleNavClick(e, link.href)}
-                  className="py-3 font-medium uppercase tracking-wide text-neutral-600 transition-colors duration-300 ease-out hover:text-[var(--dark-slate)]"
+                  className="py-3 font-medium uppercase tracking-wide text-neutral-600 transition-colors duration-300 ease-out hover:text-primary"
                 >
                   {link.label}
                 </Link>

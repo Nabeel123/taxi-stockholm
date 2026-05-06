@@ -3,7 +3,8 @@
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import Header from "@/components/Header";
 
 const BookingForm = dynamic(() => import("@/components/BookingForm"), {
@@ -37,7 +38,15 @@ const PACKAGE_TO_SERVICE: Record<string, string> = {
   "arlanda-to-city": "airport-pickup",
 };
 
+function BookPageLoading() {
+  const t = useTranslations("common");
+  return (
+    <div className="mx-auto max-w-2xl px-4 py-12 text-center text-white/60">{t("loading")}</div>
+  );
+}
+
 function BookContent() {
+  const t = useTranslations("bookPage");
   const searchParams = useSearchParams();
   const serviceParam = searchParams.get("service") || searchParams.get("package");
   const service = serviceParam
@@ -52,13 +61,17 @@ function BookContent() {
         <Link
           href="/"
           className="flex shrink-0 items-center justify-center rounded-lg p-1 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
-          aria-label="Back"
+          aria-label={t("backAria")}
         >
-          <span className="text-xl" aria-hidden>←</span>
+          <span className="text-xl" aria-hidden>
+            ←
+          </span>
         </Link>
         <div>
-          <h1 className="text-xl font-bold uppercase tracking-wide text-white sm:text-2xl">Book your ride</h1>
-          <p className="mt-0.5 text-sm text-white/60">Complete your booking details</p>
+          <h1 className="text-xl font-bold uppercase tracking-wide text-white sm:text-2xl">
+            {t("title")}
+          </h1>
+          <p className="mt-0.5 text-sm text-white/60">{t("subtitle")}</p>
         </div>
       </div>
       <BookingForm
@@ -76,13 +89,7 @@ export default function BookPage() {
     <div className="min-h-screen bg-[var(--dark-slate)]">
       <Header />
       <main className="pt-24 pb-12 sm:pt-28 sm:pb-16 md:pt-32 md:pb-20">
-        <Suspense
-          fallback={
-            <div className="mx-auto max-w-2xl px-4 py-12 text-center text-white/60">
-              Loading...
-            </div>
-          }
-        >
+        <Suspense fallback={<BookPageLoading />}>
           <BookContent />
         </Suspense>
       </main>
