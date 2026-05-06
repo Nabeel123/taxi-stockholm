@@ -44,9 +44,9 @@ type MastheadDoc = {
 
 export const DEFAULT_MASTHEAD: MastheadContent = {
   badgeText: "Premium Taxi Agency",
-  heading: "Reliable Rides, Every Time.",
+  heading: "On time, wherever you’re headed.",
   subheading:
-    "Your trusted travel partner for Stockholm, Arlanda, and Skavsta. Fixed prices and professional chauffeurs in premium, environment‑friendly vehicles.",
+    "Your trusted travel partner for Stockholm, Arlanda, and Skavsta — punctual chauffeurs and immaculate, environment‑friendly vehicles.",
   backgroundMode: "video",
   videoUrl: "/masthead.mp4",
   posterUrl: "/masthead.jpg",
