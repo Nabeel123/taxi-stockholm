@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useId } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import DatePicker from "react-datepicker";
@@ -19,6 +19,7 @@ import {
   ArrowDown,
   ClipboardList,
   Users,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -28,6 +29,7 @@ import { calculateRouteDistance, MAX_DISTANCE_KM } from "@/lib/distance";
 import { SERVICES } from "@/lib/constants";
 import { serviceIdToMessageKey } from "@/lib/service-messages";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
+import { StripePaymentSection, isStripePaymentsConfigured } from "@/components/StripePaymentSection";
 
 const serviceOptionIcons: Record<string, LucideIcon> = {
   "plane-arrival": Plane,
@@ -715,7 +717,32 @@ function Step2Payment({
   const tSite = useTranslations("site");
   const { nextStep, previousStep } = useWizard();
   const [paying, setPaying] = useState(false);
+  const [stripePaymentFailed, setStripePaymentFailed] = useState(false);
+  const [stripeReady, setStripeReady] = useState(false);
+  const [stripeBusy, setStripeBusy] = useState(false);
+  const stripePayFormId = useId();
   const data = getValues();
+
+  const paymentCompletedRef = useRef(false);
+
+  const walletDone = useCallback(() => {
+    if (paymentCompletedRef.current) return;
+    paymentCompletedRef.current = true;
+    onComplete();
+    nextStep();
+  }, [onComplete, nextStep]);
+
+  const onStripeConfigError = useCallback(() => {
+    setStripePaymentFailed(true);
+    setStripeReady(false);
+  }, []);
+
+  const serviceRecord = SERVICES.find((s) => s.id === data.serviceType);
+  const stripeCheckoutActive =
+    !stripePaymentFailed &&
+    isStripePaymentsConfigured() &&
+    serviceRecord?.price !== null &&
+    serviceRecord?.price !== undefined;
 
   const handlePay = () => {
     setPaying(true);
@@ -803,58 +830,87 @@ function Step2Payment({
         </h4>
         <p className="mt-1 text-sm text-white/60">{t("secureRide")}</p>
 
-        <div className="mt-4">
-          <p className="mb-2 text-sm font-medium text-white/80">{t("paymentInfo")}</p>
-          <p className="mb-3 text-xs text-white/50">{t("choosePayment")}</p>
-          <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              className="flex items-center gap-2 rounded-lg border-2 border-[var(--accent)] bg-[var(--accent)]/10 px-4 py-3 text-sm font-semibold text-white"
-            >
-              <CreditCard className="h-5 w-5" />
-              {t("card")}
-            </button>
-            <button
-              type="button"
-              className="flex items-center gap-2 rounded-lg border border-neutral-600 bg-neutral-800/50 px-4 py-3 text-sm font-medium text-white/80 hover:border-neutral-500"
-            >
-              Klarna
-            </button>
-            <button
-              type="button"
-              className="flex items-center gap-2 rounded-lg border border-neutral-600 bg-neutral-800/50 px-4 py-3 text-sm font-medium text-white/80 hover:border-neutral-500"
-            >
-              {t("amazonPay")}
-            </button>
-            <span className="flex items-center gap-1.5 rounded-full bg-green-500/20 px-3 py-1.5 text-xs font-medium text-green-400">
-              <Lock className="h-3.5 w-3.5" />
-              {t("secureBadge")}
-            </span>
-          </div>
-        </div>
-
-        <div className="mt-4 space-y-3">
-          <input
-            type="text"
-            placeholder={t("cardNumberPh")}
-            className="w-full rounded-lg border border-neutral-700 bg-[var(--dark-slate)]/50 px-4 py-2.5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
-          />
-          <div className="grid grid-cols-2 gap-3">
-            <input
-              type="text"
-              placeholder={t("expiryPh")}
-              className="rounded-lg border border-neutral-700 bg-[var(--dark-slate)]/50 px-4 py-2.5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
-            />
-            <input
-              type="text"
-              placeholder={t("cvcPh")}
-              className="rounded-lg border border-neutral-700 bg-[var(--dark-slate)]/50 px-4 py-2.5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
-            />
-          </div>
-          <p className="flex items-center gap-2 text-xs text-white/50">
-            <Lock className="h-3.5 w-3.5" />
-            {t("encrypted")}
-          </p>
+        <div className="mt-4 space-y-4">
+          {stripeCheckoutActive ? (
+            <>
+              <p className="text-sm font-medium text-white/80">{t("paymentInfo")}</p>
+              <p className="text-xs text-white/45">{t("stripePaymentElementHint")}</p>
+              <StripePaymentSection
+                formId={stripePayFormId}
+                serviceId={data.serviceType}
+                locale={localeTag.startsWith("sv") ? "sv" : "en"}
+                onPaid={walletDone}
+                onConfigurationError={onStripeConfigError}
+                onReadyChange={setStripeReady}
+                onBusyChange={setStripeBusy}
+              />
+              <p className="flex items-center gap-2 text-xs text-white/50">
+                <Lock className="h-3.5 w-3.5" />
+                {t("encrypted")}
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="mb-2 text-sm font-medium text-white/80">{t("paymentInfo")}</p>
+              <p className="mb-3 text-xs text-white/50">{t("choosePayment")}</p>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  className="flex items-center gap-2 rounded-lg border-2 border-[var(--accent)] bg-[var(--accent)]/10 px-4 py-3 text-sm font-semibold text-white"
+                >
+                  <CreditCard className="h-5 w-5" />
+                  {t("card")}
+                </button>
+                <button
+                  type="button"
+                  className="flex items-center gap-2 rounded-lg border border-neutral-600 bg-neutral-800/50 px-4 py-3 text-sm font-medium text-white/80 hover:border-neutral-500"
+                >
+                  Klarna
+                </button>
+                <button
+                  type="button"
+                  aria-label={t("applePayAria")}
+                  className="flex items-center gap-2 rounded-lg border border-neutral-600 bg-neutral-800/50 px-4 py-3 text-sm font-medium text-white/80 hover:border-neutral-500"
+                >
+                  <Wallet className="h-5 w-5 shrink-0" aria-hidden />
+                  {t("applePay")}
+                </button>
+                <button
+                  type="button"
+                  className="flex items-center gap-2 rounded-lg border border-neutral-600 bg-neutral-800/50 px-4 py-3 text-sm font-medium text-white/80 hover:border-neutral-500"
+                >
+                  {t("amazonPay")}
+                </button>
+                <span className="flex items-center gap-1.5 rounded-full bg-green-500/20 px-3 py-1.5 text-xs font-medium text-green-400">
+                  <Lock className="h-3.5 w-3.5" />
+                  {t("secureBadge")}
+                </span>
+              </div>
+              <div className="mt-4 space-y-3">
+                <input
+                  type="text"
+                  placeholder={t("cardNumberPh")}
+                  className="w-full rounded-lg border border-neutral-700 bg-[var(--dark-slate)]/50 px-4 py-2.5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                />
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    placeholder={t("expiryPh")}
+                    className="rounded-lg border border-neutral-700 bg-[var(--dark-slate)]/50 px-4 py-2.5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                  />
+                  <input
+                    type="text"
+                    placeholder={t("cvcPh")}
+                    className="rounded-lg border border-neutral-700 bg-[var(--dark-slate)]/50 px-4 py-2.5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                  />
+                </div>
+                <p className="flex items-center gap-2 text-xs text-white/50">
+                  <Lock className="h-3.5 w-3.5" />
+                  {t("encrypted")}
+                </p>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -866,21 +922,39 @@ function Step2Payment({
         >
           {t("back")}
         </button>
-        <button
-          type="button"
-          onClick={handlePay}
-          disabled={paying}
-          className="flex-1 rounded-lg bg-[var(--accent)] py-3 font-bold text-black transition-all hover:scale-[1.01] hover:bg-[var(--accent-hover)] disabled:opacity-50"
-        >
-          {paying ? (
-            <span className="flex items-center justify-center gap-2">
-              <Loader2 className="h-5 w-5 animate-spin" />
-              {t("processing")}
-            </span>
-          ) : (
-            t("payAmount", { amount: packagePrice })
-          )}
-        </button>
+        {stripeCheckoutActive ? (
+          <button
+            type="submit"
+            form={stripePayFormId}
+            disabled={!stripeReady || stripeBusy}
+            className="flex-1 rounded-lg bg-[var(--accent)] py-3 font-bold text-black transition-all hover:scale-[1.01] hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {stripeBusy ? (
+              <span className="flex items-center justify-center gap-2">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                {t("processing")}
+              </span>
+            ) : (
+              t("payAmount", { amount: packagePrice })
+            )}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={handlePay}
+            disabled={paying}
+            className="flex-1 rounded-lg bg-[var(--accent)] py-3 font-bold text-black transition-all hover:scale-[1.01] hover:bg-[var(--accent-hover)] disabled:opacity-50"
+          >
+            {paying ? (
+              <span className="flex items-center justify-center gap-2">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                {t("processing")}
+              </span>
+            ) : (
+              t("payAmount", { amount: packagePrice })
+            )}
+          </button>
+        )}
       </div>
     </div>
   );

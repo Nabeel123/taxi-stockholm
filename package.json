@@ -25,6 +25,9 @@
     "react-dom": "19.2.3",
     "react-hook-form": "^7.71.2",
     "react-use-wizard": "^2.3.0",
+    "stripe": "^17.7.0",
+    "@stripe/react-stripe-js": "^6.3.0",
+    "@stripe/stripe-js": "^9.4.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

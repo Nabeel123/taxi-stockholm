@@ -16,6 +16,8 @@ function npmPackageRoot(packageName: string): string {
 }
 
 const nextConfig: NextConfig = {
+  /** Bottom-left Next dev stripes read as stray lines on dark /book UI in dev */
+  devIndicators: false,
   turbopack: {
     root: projectRoot,
     resolveAlias: {
