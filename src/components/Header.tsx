@@ -1,16 +1,69 @@
 "use client";
 
-import { useState } from "react";
+import {
+  useState,
+  useCallback,
+  useSyncExternalStore,
+} from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
+function navLinkHash(href: string): "" | `#${string}` {
+  if (!href.includes("#")) return "";
+  const id = href.split("#")[1];
+  return id ? (`#${id}` as `#${string}`) : "";
+}
+
+function isNavLinkActive(pathname: string, locationHash: string, href: string): boolean {
+  const onHome = pathname === "/";
+  if (!onHome) return false;
+  const anchor = navLinkHash(href);
+  if (href === "/" || anchor === "") {
+    const h = locationHash || "";
+    return h === "" || h === "#";
+  }
+  return locationHash === anchor;
+}
+
+/** Shared classes: accent underline only when active */
+function navLinkClassName(active: boolean): string {
+  const base =
+    "font-medium uppercase tracking-wide transition-colors duration-300 ease-out text-sm lg:text-sm";
+  if (active) {
+    return `${base} text-accent underline decoration-accent decoration-2 underline-offset-[10px]`;
+  }
+  return `${base} text-neutral-600 hover:text-primary`;
+}
+
+const LOCATION_SYNC = "header:locationsync";
+
+function subscribeLocation(onChange: () => void): () => void {
+  window.addEventListener("hashchange", onChange);
+  window.addEventListener("popstate", onChange);
+  window.addEventListener(LOCATION_SYNC, onChange);
+  return () => {
+    window.removeEventListener("hashchange", onChange);
+    window.removeEventListener("popstate", onChange);
+    window.removeEventListener(LOCATION_SYNC, onChange);
+  };
+}
+
+function getLocationHash(): string {
+  return window.location.hash;
+}
+
 export default function Header() {
   const t = useTranslations("header");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const locationHash = useSyncExternalStore(
+    subscribeLocation,
+    getLocationHash,
+    () => "",
+  );
 
   const navLinks = [
     { href: "/", label: t("home") },
@@ -19,25 +72,29 @@ export default function Header() {
     { href: "/#reviews", label: t("reviews") },
   ] as const;
 
-  const handleNavClick = (
-    e: React.MouseEvent<HTMLAnchorElement>,
-    href: string,
-  ) => {
-    if (pathname === "/") {
+  const handleNavClick = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+      if (pathname !== "/") return;
       if (href === "/") {
         e.preventDefault();
         document.getElementById("hero")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        window.history.replaceState(null, "", pathname);
+        window.dispatchEvent(new Event(LOCATION_SYNC));
         setMobileMenuOpen(false);
         return;
       }
-      const hash = href.split("#")[1];
-      if (hash) {
+      const id = href.split("#")[1];
+      if (id) {
         e.preventDefault();
-        document.getElementById(hash)?.scrollIntoView({ behavior: "smooth", block: "start" });
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+        const nextHash = `#${id}`;
+        window.history.replaceState(null, "", `${pathname}${nextHash}`);
+        window.dispatchEvent(new Event(LOCATION_SYNC));
         setMobileMenuOpen(false);
       }
-    }
-  };
+    },
+    [pathname],
+  );
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-neutral-200 bg-white shadow-sm">
@@ -63,16 +120,20 @@ export default function Header() {
         </Link>
 
         <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-4 xl:gap-6 lg:flex">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={(e) => handleNavClick(e, link.href)}
-              className="text-sm font-medium uppercase tracking-wide text-neutral-600 transition-colors duration-300 ease-out hover:text-primary"
-            >
-              {link.label}
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            const active = isNavLinkActive(pathname, locationHash, link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={(e) => handleNavClick(e, link.href)}
+                className={navLinkClassName(active)}
+                aria-current={active ? "page" : undefined}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
@@ -103,16 +164,20 @@ export default function Header() {
             className="border-t border-neutral-200 bg-white lg:hidden"
           >
             <nav className="flex flex-col gap-1 px-4 py-4">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={(e) => handleNavClick(e, link.href)}
-                  className="py-3 font-medium uppercase tracking-wide text-neutral-600 transition-colors duration-300 ease-out hover:text-primary"
-                >
-                  {link.label}
-                </Link>
-              ))}
+              {navLinks.map((link) => {
+                const active = isNavLinkActive(pathname, locationHash, link.href);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={(e) => handleNavClick(e, link.href)}
+                    className={`py-3 ${navLinkClassName(active)}`}
+                    aria-current={active ? "page" : undefined}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
             </nav>
           </motion.div>
         )}
