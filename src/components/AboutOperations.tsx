@@ -105,7 +105,8 @@ export default function AboutOperations() {
 
                 <div className="absolute right-3 top-3 z-10 max-w-[min(100%,17rem)] rounded-xl border border-white/10 bg-[var(--primary)]/95 p-3.5 shadow-2xl backdrop-blur-sm sm:right-4 sm:top-4 sm:max-w-[18.5rem] sm:p-4">
                   <p className="text-sm font-medium text-white">
-                    {t("pickupLine")}{" "}
+                    {t("pickupLine")}
+                    {t("pickupLine") ? " " : null}
                     <span className="font-bold text-[var(--accent)]">{t("pickupEta")}</span>
                   </p>
                   <p className="mt-1 text-xs leading-snug text-white/65">

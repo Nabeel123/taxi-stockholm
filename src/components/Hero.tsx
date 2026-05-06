@@ -96,7 +96,7 @@ export default function Hero({ content }: HeroProps) {
             transition={{ duration: 0.5 }}
           >
             <span className="font-heading inline-block rounded-full bg-[var(--accent)] px-5 py-2 text-xs font-bold uppercase tracking-[0.15em] text-black sm:text-sm">
-              {content.badgeText}
+              {t("mastheadKicker")}
             </span>
           </motion.div>
           <motion.h1
@@ -105,7 +105,7 @@ export default function Hero({ content }: HeroProps) {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="mt-6 text-3xl font-bold leading-[1.1] tracking-tight text-[var(--accent)] sm:text-4xl md:text-5xl lg:text-6xl"
           >
-            {content.heading}
+            {t("mastheadHeading")}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 16 }}
@@ -113,7 +113,7 @@ export default function Hero({ content }: HeroProps) {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-white/95 sm:text-lg md:text-xl"
           >
-            {content.subheading}
+            {t("mastheadSubheading")}
           </motion.p>
 
           <motion.div

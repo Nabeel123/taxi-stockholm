@@ -48,6 +48,9 @@
     "terms": "Användarvillkor"
   },
   "hero": {
+    "mastheadKicker": "Inga fasta tabellpriser — inga dolda avgifter",
+    "mastheadHeading": "Pålitliga resor, varje gång",
+    "mastheadSubheading": "Upplev trygga, lyxiga resor i Stockholm med en service präglad av punktlighet, diskretion och professionalism — där varje resa känns smidig, varje detalj är genomtänkt och din komfort alltid står i centrum.",
     "pickupPlaceholder": "Hämtningsadress",
     "dropoffPlaceholder": "Avlämningsadress",
     "trustRating": "5,0 i betyg",
@@ -155,8 +158,8 @@
   "about": {
     "bookNow": "Boka nu",
     "imageAlt": "Premium taxi — bil och stad",
-    "pickupLine": "Hämtning om cirka",
-    "pickupEta": "5 min",
+    "pickupLine": "",
+    "pickupEta": "Hämtning på begäran",
     "pickupSub": "Premium miljöbil · Alexander",
     "features": [
       {
@@ -199,7 +202,7 @@
     "arlandaTooltipAria": "Om fast pris Arlanda: enkel resa mellan Stockholms city och Arlanda (ARN), utan tillägg.",
     "arlandaTooltipBody": "Fast pris enkel resa mellan Stockholms city och Arlanda (ARN). Inga tillägg eller dolda avgifter.",
     "responseValue": "2 min",
-    "pickupValue": "5 min",
+    "pickupValue": "Hämtning på begäran",
     "secpayPlaceholder": "595 SEK"
   },
   "testimonials": {

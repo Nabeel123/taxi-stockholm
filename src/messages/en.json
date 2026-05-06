@@ -48,6 +48,9 @@
     "terms": "Terms of service"
   },
   "hero": {
+    "mastheadKicker": "No Fixed Price — No Hidden Fees",
+    "mastheadHeading": "Reliable Rides, Every Time",
+    "mastheadSubheading": "Experience trusted, luxury travel in Stockholm with a service defined by punctuality, discretion, and professionalism where every journey is smooth, every detail is refined, and your comfort is always the priority.",
     "pickupPlaceholder": "Pickup address",
     "dropoffPlaceholder": "Drop-off address",
     "trustRating": "5.0 rating",
@@ -155,8 +158,8 @@
   "about": {
     "bookNow": "Book now",
     "imageAlt": "Premium taxi — vehicle and city setting",
-    "pickupLine": "Pickup in",
-    "pickupEta": "about 5 min",
+    "pickupLine": "",
+    "pickupEta": "On-demand pickup",
     "pickupSub": "Premium eco-friendly vehicle · Alexander",
     "features": [
       {
@@ -194,12 +197,12 @@
     "orCallUs": "Or call us",
     "callAria": "Call {phone}",
     "avgResponse": "Avg. response",
-    "pickupTime": "Pickup time",
+    "pickupTime": "Pickup",
     "arlandaFixedPrice": "Arlanda fixed price",
     "arlandaTooltipAria": "About Arlanda fixed price: one-way fare between Stockholm city center and Arlanda Airport (ARN), no surge.",
     "arlandaTooltipBody": "One-way fixed fare between Stockholm city center and Arlanda Airport (ARN). No surge or hidden fees.",
     "responseValue": "2 min",
-    "pickupValue": "5 min",
+    "pickupValue": "On-demand pickup",
     "secpayPlaceholder": "595 SEK"
   },
   "testimonials": {
