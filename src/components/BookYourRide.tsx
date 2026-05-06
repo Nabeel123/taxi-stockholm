@@ -203,12 +203,15 @@ export default function BookYourRide() {
                     const Icon = icons[service.icon] || MapPin;
                     const isSelected = selectedId === service.id;
                     const mk = serviceIdToMessageKey(service.id);
+                    const spanVasteras = service.id === "vasteras-route";
                     return (
                       <button
                         key={service.id}
                         type="button"
                         onClick={() => setSelectedId(service.id)}
-                        className={`relative flex flex-col rounded-2xl border p-4 text-left shadow-sm transition-all sm:p-5 ${
+                        className={`relative flex flex-col rounded-2xl border p-4 text-left shadow-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] sm:p-5 ${
+                          spanVasteras ? "sm:col-span-2" : ""
+                        } ${
                           isSelected
                             ? "border-2 border-[var(--accent)] bg-[var(--book-card-selected)] shadow-md"
                             : "border border-neutral-200 bg-white hover:border-neutral-300"

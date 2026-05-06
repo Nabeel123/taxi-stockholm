@@ -4,6 +4,7 @@ const phoneRegex = /^\+?[0-9\s\-()]{10,20}$/;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const serviceTypes = [
+  "vasteras-route",
   "airport-pickup",
   "airport-dropoff",
   "city-tour",
@@ -84,7 +85,9 @@ export type BookingFormData = z.infer<typeof bookingSchema>;
 export const SERVICE_OPTIONS = serviceTypes.map((id) => ({
   id,
   label:
-    id === "airport-pickup"
+    id === "vasteras-route"
+      ? "Västerås route"
+      : id === "airport-pickup"
       ? "Airport Pickup"
       : id === "airport-dropoff"
         ? "Airport Drop-off"

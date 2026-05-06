@@ -1,5 +1,21 @@
 export const SERVICES = [
   {
+    id: "vasteras-route",
+    name: "Västerås ↔ Arlanda / Stockholm",
+    displayName: "Västerås ↔ Arlanda / Stockholm",
+    description: "1000 SEK fixed — regional corridor",
+    longDesc: "Västerås ↔ Arlanda / Stockholm fixed route package",
+    price: 1000,
+    priceLabel: "1000 SEK",
+    icon: "map-pin",
+    popular: true,
+    duration: "Flexible",
+    route: "Regional",
+    tagline: "Featured fixed route.",
+    features: ["1000 SEK fixed", "Västerås · Arlanda · Stockholm"],
+    ctaLabel: "BOOK ROUTE",
+  },
+  {
     id: "airport-pickup",
     name: "Airport Pickup",
     displayName: "Arlanda to City",

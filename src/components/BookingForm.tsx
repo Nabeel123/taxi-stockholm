@@ -8,7 +8,19 @@ import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import { Wizard, useWizard } from "react-use-wizard";
 import confetti from "canvas-confetti";
-import { Loader2, MapPin, CheckCircle, CreditCard, Lock, ArrowDown, ClipboardList, Users } from "lucide-react";
+import {
+  Loader2,
+  MapPin,
+  Plane,
+  Landmark,
+  CheckCircle,
+  CreditCard,
+  Lock,
+  ArrowDown,
+  ClipboardList,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { bookingSchema, type BookingFormData } from "@/lib/booking-schema";
 import { PASSENGER_OPTIONS, SERVICE_OPTIONS } from "@/lib/booking-schema";
@@ -17,6 +29,12 @@ import { SERVICES } from "@/lib/constants";
 import { serviceIdToMessageKey } from "@/lib/service-messages";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 
+const serviceOptionIcons: Record<string, LucideIcon> = {
+  "plane-arrival": Plane,
+  "plane-departure": Plane,
+  landmark: Landmark,
+  "map-pin": MapPin,
+};
 
 interface BookingFormProps {
   defaultService?: string;
@@ -155,6 +173,13 @@ export default function BookingForm({
       reset({ ...values, serviceType: "airport-pickup", pickupLocation: arlandaLine, dropoffLocation: "" });
     } else if (defaultService === "custom-route" && (defaultPickup || defaultDropoff)) {
       reset({ ...values, serviceType: "custom-route", pickupLocation: defaultPickup ?? "", dropoffLocation: defaultDropoff ?? "" });
+    } else if (defaultService === "vasteras-route") {
+      reset({
+        ...values,
+        serviceType: "vasteras-route",
+        pickupLocation: defaultPickup ?? "",
+        dropoffLocation: defaultDropoff ?? "",
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- getValues is stable, we only want to run when URL params change
   }, [defaultService, defaultPickup, defaultDropoff, arlandaLine]);
@@ -309,6 +334,7 @@ function Step1Details({
   onCustomRouteComplete,
 }: Step1Props) {
   const t = useTranslations("booking");
+  const tSvc = useTranslations("services");
   const tSite = useTranslations("site");
   const { nextStep, goToStep } = useWizard();
   const [isValidating, setIsValidating] = useState(false);
@@ -358,8 +384,78 @@ function Step1Details({
 
         {/* Form content */}
         <div className="px-5 py-5 sm:px-6 sm:py-6">
+          <form onSubmit={(e) => e.preventDefault()} className="space-y-5" noValidate>
+            <div>
+              <p id="booking-service-type-label" className="mb-3 block text-sm font-semibold text-[var(--accent)]">
+                {t("serviceTypeLabel")}
+              </p>
+              <Controller
+                name="serviceType"
+                control={control}
+                render={({ field }) => (
+                  <div
+                    className="grid gap-3 sm:grid-cols-2"
+                    role="radiogroup"
+                    aria-labelledby="booking-service-type-label"
+                  >
+                    {SERVICE_OPTIONS.map((opt) => {
+                      const selected = field.value === opt.id;
+                      const svc = SERVICES.find((s) => s.id === opt.id);
+                      const msgKey = serviceIdToMessageKey(opt.id);
+                      const Icon = svc?.icon ? serviceOptionIcons[svc.icon] ?? MapPin : MapPin;
+                      const isVasteras = opt.id === "vasteras-route";
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          role="radio"
+                          aria-checked={selected}
+                          onClick={() => {
+                            if (opt.id === "vasteras-route" && field.value !== "vasteras-route") {
+                              setValue("pickupLocation", "", { shouldValidate: false });
+                              setValue("dropoffLocation", "", { shouldValidate: false });
+                            }
+                            field.onChange(opt.id);
+                          }}
+                          className={`rounded-xl border p-4 text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] sm:p-5 ${
+                            isVasteras ? "sm:col-span-2" : ""
+                          } ${
+                            selected
+                              ? "border-2 border-[var(--accent)] bg-[var(--accent)]/10 shadow-md ring-1 ring-[var(--accent)]/25"
+                              : "border border-neutral-600 bg-neutral-800/40 hover:border-neutral-500"
+                          }`}
+                        >
+                          <div className="flex gap-3">
+                              <div
+                                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
+                                  selected ? "bg-[var(--accent)] text-black" : "bg-neutral-700 text-white/80"
+                                }`}
+                              >
+                                <Icon className="h-5 w-5" aria-hidden />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-semibold text-white">{t(`serviceType_${msgKey}`)}</p>
+                                <p className="mt-0.5 text-sm text-white/55">{tSvc(`${msgKey}.description`)}</p>
+                                {svc?.priceLabel ? (
+                                  <p className="mt-1 text-sm font-bold text-[var(--accent)]">{svc.priceLabel}</p>
+                                ) : null}
+                              </div>
+                            </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              />
+              {errors.serviceType && (
+                <p className="mt-3 block min-h-[1.5rem] text-left text-sm leading-relaxed text-red-500">
+                  {errors.serviceType.message}
+                </p>
+              )}
+            </div>
+
           {serviceType !== "city-tour" && serviceType !== "custom-route" && (
-            <div className="mb-6 rounded-lg border-2 border-[var(--accent)]/60 bg-[var(--accent)]/5 p-4 ring-1 ring-[var(--accent)]/20">
+            <div className="rounded-lg border-2 border-[var(--accent)]/60 bg-[var(--accent)]/5 p-4 ring-1 ring-[var(--accent)]/20">
               <div className="flex items-center gap-2 text-sm font-semibold text-[var(--accent)]">
                 <MapPin className="h-4 w-4 text-[var(--accent)]" />
                 {t("distanceCalculator", { maxKm: MAX_DISTANCE_KM })}
@@ -387,7 +483,6 @@ function Step1Details({
             </div>
           )}
 
-          <form onSubmit={(e) => e.preventDefault()} className="space-y-5" noValidate>
             <div>
               <label htmlFor="fullName" className="mb-1 block text-sm font-medium text-white/80">{t("fullNameLabel")}</label>
               <input
@@ -425,26 +520,6 @@ function Step1Details({
               />
               {errors.phone && (
                 <p className="mt-3 block min-h-6 text-left text-sm leading-relaxed text-red-500">{errors.phone.message}</p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="serviceType" className="mb-1 block text-sm font-medium text-white/80">{t("serviceTypeLabel")}</label>
-              <select
-                id="serviceType"
-                {...register("serviceType")}
-                className={`w-full rounded-lg border px-4 py-2.5 pr-10 bg-[var(--dark-slate)]/50 text-white focus:outline-none focus:ring-2 focus:ring-[var(--accent)] [&:not([multiple])]:appearance-none [&:not([multiple])]:bg-[url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%239ca3af%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22M6%209l6%206%206-6%22%2F%3E%3C%2Fsvg%3E')] [&:not([multiple])]:bg-[length:1.25rem] [&:not([multiple])]:bg-[right_0.75rem_center] [&:not([multiple])]:bg-no-repeat ${errors.serviceType ? "border-red-500" : "border-neutral-700"}`}
-              >
-                {SERVICE_OPTIONS.map((opt) => (
-                  <option key={opt.id} value={opt.id}>
-                    {t(`serviceType_${serviceIdToMessageKey(opt.id)}`)}
-                  </option>
-                ))}
-              </select>
-              {errors.serviceType && (
-                <p className="mt-3 block min-h-[1.5rem] text-left text-sm leading-relaxed text-red-500">
-                  {errors.serviceType.message}
-                </p>
               )}
             </div>
 
@@ -534,7 +609,10 @@ function Step1Details({
           )}
         </div>
 
-        {(serviceType === "airport-pickup" || serviceType === "airport-dropoff" || serviceType === "custom-route") && (
+        {(serviceType === "airport-pickup" ||
+          serviceType === "airport-dropoff" ||
+          serviceType === "vasteras-route" ||
+          serviceType === "custom-route") && (
           <div>
             <label className="mb-1 block text-sm font-medium text-white/80">{t("dropoffLocationLabel")}</label>
             {isDropoffLocked && <p className="mb-1 text-xs text-white/50">{t("predefinedPackage")}</p>}

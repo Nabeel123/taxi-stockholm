@@ -9,6 +9,14 @@
     "vehicleTagline": "Premium, environment‑friendly vehicles — comfortable rides with lower environmental impact.",
     "vehicleShort": "Premium eco-friendly vehicle",
     "vastervasOffer": "Västerås ↔ Arlanda / Stockholm — 1000 SEK fixed price",
+    "vasterasOfferAria": "Special offer: Västerås, Arlanda and Stockholm route for 1000 Swedish kronor, fixed price.",
+    "vasterasOffer_kicker": "Special offer",
+    "vasterasOffer_highlight": "Featured route pricing",
+    "vasterasOffer_cityA": "Västerås",
+    "vasterasOffer_sep": "↔",
+    "vasterasOffer_route": "Arlanda / Stockholm",
+    "vasterasOffer_price": "1000 SEK",
+    "vasterasOffer_fixed": "Fixed price",
     "licensedInsured": "Licensed & insured"
   },
   "common": {
@@ -112,6 +120,16 @@
     }
   },
   "services": {
+    "vasteras_route": {
+      "name": "Västerås ↔ Arlanda / Stockholm",
+      "displayName": "Västerås ↔ Arlanda / Stockholm",
+      "description": "1000 SEK fixed — book your pickup & drop‑off.",
+      "tagline": "Featured regional route.",
+      "duration": "Flexible",
+      "route": "Västerås · ARN · Stockholm",
+      "features": ["1000 SEK fixed", "Premium vehicle", "24/7 booking"],
+      "ctaLabel": "BOOK THIS ROUTE"
+    },
     "airport_pickup": {
       "name": "Airport Pickup",
       "displayName": "Arlanda to City",
@@ -294,6 +312,7 @@
     "stepPayment": "Payment",
     "stepConfirm": "Confirm",
     "arlandaAirport": "Arlanda Airport, Stockholm",
+    "serviceType_vasteras_route": "Västerås ↔ Arlanda / Stockholm (1000 SEK)",
     "serviceType_airport_pickup": "Airport Pickup",
     "serviceType_airport_dropoff": "Airport Drop-off",
     "serviceType_city_tour": "City Tour",
