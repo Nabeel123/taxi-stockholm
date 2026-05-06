@@ -1,6 +1,6 @@
-# Tesla Taxi Booking Web App
+# Taxi booking web app
 
-A premium Tesla taxi booking website inspired by [CabX Stockholm](https://www.cabx.com.se/), built with Next.js, TypeScript, and Tailwind CSS.
+Airport transfers and Stockholm taxi bookings — Next.js + TypeScript + Tailwind CSS.
 
 ## Features
 

@@ -57,7 +57,7 @@ function BookContent() {
           <span className="text-xl" aria-hidden>←</span>
         </Link>
         <div>
-          <h1 className="text-xl font-bold uppercase tracking-wide text-white sm:text-2xl">Book Your Tesla</h1>
+          <h1 className="text-xl font-bold uppercase tracking-wide text-white sm:text-2xl">Book your ride</h1>
           <p className="mt-0.5 text-sm text-white/60">Complete your booking details</p>
         </div>
       </div>

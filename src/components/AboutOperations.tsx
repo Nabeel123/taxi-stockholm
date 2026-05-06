@@ -4,11 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   Award,
-  CalendarClock,
-  Car,
   Languages,
+  MapPinned,
   type LucideIcon,
 } from "lucide-react";
+import { COMPANY } from "@/lib/site";
 
 const features: {
   icon: LucideIcon;
@@ -24,21 +24,23 @@ const features: {
     ],
   },
   {
-    icon: CalendarClock,
-    title: "Order on-demand or prebook",
-    lines: ["Black cabs that come to you, whenever you need them."],
+    icon: MapPinned,
+    title: "Stockholm, Arlanda & Skavsta",
+    lines: [
+      "Fixed-price airport routes and comfortable city rides.",
+      "Book on the website or WhatsApp — we’re here 24/7.",
+    ],
   },
   {
     icon: Award,
     title: "Driven by professionals",
-    lines: ["The world's most qualified cab drivers."],
+    lines: ["Experienced drivers focused on safety and punctuality."],
   },
 ];
 
 export default function AboutOperations() {
   return (
     <section className="relative overflow-hidden py-16 sm:py-20 md:py-24" id="about">
-      {/* Taxi photo + brand gradients (full-bleed background) */}
       <div className="pointer-events-none absolute inset-0" aria-hidden>
         <Image
           src="/about.jpg"
@@ -56,35 +58,38 @@ export default function AboutOperations() {
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
           <div className="order-2 lg:order-1">
-            <h2 className="font-heading text-3xl font-bold leading-tight tracking-tight text-[var(--secondary)] sm:text-4xl md:text-[2.75rem] md:leading-[1.1]">
-              Black cabs that come to you
+            <h2 className="font-heading text-balance text-2xl font-bold leading-tight tracking-tight text-[var(--secondary)] sm:text-3xl md:text-[2.25rem] md:leading-[1.12]">
+              {COMPANY.brandTitle}
             </h2>
+            <p className="mt-4 max-w-xl text-base leading-relaxed text-neutral-600 sm:text-lg">
+              {COMPANY.description}
+            </p>
 
             <ul className="mt-10 space-y-10">
               {features.map((item) => {
                 const Icon = item.icon;
                 return (
-                <li key={item.title} className="flex gap-4 sm:gap-5">
-                  <div
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[var(--primary)]/20 bg-white/60 shadow-sm backdrop-blur-sm sm:h-12 sm:w-12"
-                    aria-hidden
-                  >
-                    <Icon
-                      className="h-5 w-5 text-[var(--primary)] sm:h-[1.375rem] sm:w-[1.375rem]"
-                      strokeWidth={1.75}
-                    />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-heading text-base font-bold text-[var(--secondary)] sm:text-lg">
-                      {item.title}
-                    </p>
-                    <div className="mt-2 space-y-1.5 text-sm leading-relaxed text-neutral-600 sm:text-base">
-                      {item.lines.map((line) => (
-                        <p key={line}>{line}</p>
-                      ))}
+                  <li key={item.title} className="flex gap-4 sm:gap-5">
+                    <div
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[var(--primary)]/20 bg-white/60 shadow-sm backdrop-blur-sm sm:h-12 sm:w-12"
+                      aria-hidden
+                    >
+                      <Icon
+                        className="h-5 w-5 text-[var(--primary)] sm:h-[1.375rem] sm:w-[1.375rem]"
+                        strokeWidth={1.75}
+                      />
                     </div>
-                  </div>
-                </li>
+                    <div className="min-w-0">
+                      <p className="font-heading text-base font-bold text-[var(--secondary)] sm:text-lg">
+                        {item.title}
+                      </p>
+                      <div className="mt-2 space-y-1.5 text-sm leading-relaxed text-neutral-600 sm:text-base">
+                        {item.lines.map((line) => (
+                          <p key={line}>{line}</p>
+                        ))}
+                      </div>
+                    </div>
+                  </li>
                 );
               })}
             </ul>
@@ -93,7 +98,7 @@ export default function AboutOperations() {
               href="/book"
               className="mt-10 inline-flex items-center justify-center rounded-full bg-[var(--accent)] px-8 py-3.5 text-sm font-bold uppercase tracking-wide text-[var(--secondary)] shadow-sm transition hover:bg-[var(--accent-hover)] sm:text-base"
             >
-              Learn more
+              Book now
             </Link>
           </div>
 
@@ -102,7 +107,7 @@ export default function AboutOperations() {
               <div className="relative aspect-[4/5] overflow-hidden rounded-2xl shadow-xl sm:aspect-[4/5] md:aspect-[5/6] lg:aspect-square">
                 <Image
                   src="/about.jpg"
-                  alt="Premium taxi service — vehicle and city setting"
+                  alt="Premium taxi — vehicle and city setting"
                   fill
                   className="object-cover object-center"
                   sizes="(max-width: 1024px) 100vw, 50vw"
@@ -111,23 +116,14 @@ export default function AboutOperations() {
                 <div className="absolute right-3 top-3 z-10 max-w-[min(100%,17rem)] rounded-xl border border-white/10 bg-[var(--primary)]/95 p-3.5 shadow-2xl backdrop-blur-sm sm:right-4 sm:top-4 sm:max-w-[18.5rem] sm:p-4">
                   <p className="text-sm font-medium text-white">
                     Pickup in{" "}
-                    <span className="font-bold text-[var(--accent)]">4 min</span>
+                    <span className="font-bold text-[var(--accent)]">about 5 min</span>
                   </p>
                   <p className="mt-1 text-xs leading-snug text-white/65">
-                    7NLR004 • Black electric cab • Alexander
+                    Premium eco-friendly vehicle · Alexander
                   </p>
                   <div className="relative mt-3">
                     <div className="h-2 w-full overflow-hidden rounded-full bg-white/15">
-                      <div
-                        className="h-full w-[62%] rounded-full bg-[var(--accent)]"
-                        aria-hidden
-                      />
-                    </div>
-                    <div
-                      className="absolute left-[58%] top-1/2 flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-md"
-                      aria-hidden
-                    >
-                      <Car className="h-3.5 w-3.5 text-[var(--primary)]" strokeWidth={2.5} />
+                      <div className="h-full w-[62%] rounded-full bg-[var(--accent)]" aria-hidden />
                     </div>
                   </div>
                 </div>

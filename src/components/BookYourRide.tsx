@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { SERVICES } from "@/lib/constants";
 import type { ServiceId } from "@/lib/constants";
+import { COMPANY } from "@/lib/site";
 
 const icons: Record<string, LucideIcon> = {
   "plane-arrival": Plane,
@@ -21,8 +22,8 @@ const icons: Record<string, LucideIcon> = {
   "map-pin": MapPin,
 };
 
-const WHATSAPP_DIGITS = "46700123456";
-const TEL_HREF = "+46700123456";
+const WHATSAPP_DIGITS = COMPANY.whatsappDigits;
+const TEL_HREF = COMPANY.phoneE164;
 
 const steps = [
   { num: 1 as const, label: "Choose Service" },
@@ -56,7 +57,8 @@ function buildWhatsAppMessage(
 ): string {
   const service = SERVICES.find((s) => s.id === serviceId)!;
   const lines = [
-    "🚖 Taxi Stockholm — booking request",
+    `🚖 Booking request — ${COMPANY.legalName}`,
+    COMPANY.brandTitle,
     "",
     `Service: ${service.name}`,
     `Route / details: ${service.description}`,

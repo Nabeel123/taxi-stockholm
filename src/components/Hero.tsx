@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { MapPin, Phone, Star } from "lucide-react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import type { MastheadContent } from "@/lib/sanity/masthead";
+import { COMPANY } from "@/lib/site";
 
 const PICKUP_PLACEHOLDER = "Pickup address";
 const DROPOFF_PLACEHOLDER = "Drop-off address";
@@ -14,10 +15,10 @@ const DROPOFF_PLACEHOLDER = "Drop-off address";
 const TRUST_BADGES = ["5.0 rating", "1000+ rides", "Fixed prices"] as const;
 
 const CONTACT_PROMPT = "Prefer to talk?";
-const CALL_LABEL = "Call +46 700 123 456";
-const CALL_HREF = "tel:+46700123456";
+const CALL_LABEL = `Call ${COMPANY.phoneDisplay}`;
+const CALL_HREF = `tel:${COMPANY.phoneE164.replace(/\s/g, "")}`;
 const WHATSAPP_LABEL = "WhatsApp";
-const WHATSAPP_HREF = "https://wa.me/46700123456";
+const WHATSAPP_HREF = `https://wa.me/${COMPANY.whatsappDigits}`;
 
 const BOOKING_CARD_TITLE = "Get a price in seconds";
 const PRIMARY_CTA_TEXT = "Get price";

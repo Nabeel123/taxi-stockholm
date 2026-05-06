@@ -27,9 +27,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Taxi Stockholm — Premium Tesla Taxi Service",
+  title: "Airport taxi — Stockholm, Arlanda & Skavsta | Sahotra Services AB",
   description:
-    "Stockholm's Premier Tesla-Only Taxi Fleet. Experience luxury transportation with Tesla Model S 2024, zero emissions, and fixed pricing.",
+    "Fixed-price rides to and from Stockholm, Arlanda (ARN), and Skavsta Airport. 24/7 booking, professional drivers, premium environment-friendly vehicles.",
 };
 
 export default function RootLayout({

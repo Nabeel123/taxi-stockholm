@@ -46,7 +46,7 @@ export const DEFAULT_MASTHEAD: MastheadContent = {
   badgeText: "Premium Taxi Agency",
   heading: "Reliable Rides, Every Time.",
   subheading:
-    "Your trusted travel partner in Stockholm. Punctual, reliable, and professional chauffeur services in our Tesla Model S 2024 fleet.",
+    "Your trusted travel partner for Stockholm, Arlanda, and Skavsta. Fixed prices and professional chauffeurs in premium, environment‑friendly vehicles.",
   backgroundMode: "video",
   videoUrl: "/masthead.mp4",
   posterUrl: "/masthead.jpg",

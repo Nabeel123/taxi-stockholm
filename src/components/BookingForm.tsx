@@ -16,6 +16,7 @@ import {
 } from "@/lib/booking-schema";
 import { calculateRouteDistance, MAX_DISTANCE_KM } from "@/lib/distance";
 import { SERVICES } from "@/lib/constants";
+import { SITE_VEHICLE_SHORT } from "@/lib/site";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 
 
@@ -323,7 +324,7 @@ function Step1Details({
           <div className="flex flex-wrap items-center justify-between gap-4 border-b border-neutral-700/80 bg-neutral-950/80 px-5 py-4">
             <div>
               <p className="font-semibold text-white">{packageDisplayName}</p>
-              <p className="mt-0.5 text-sm text-white/60">Tesla Model S 2024</p>
+              <p className="mt-0.5 text-sm text-white/60">{SITE_VEHICLE_SHORT}</p>
             </div>
             <p className="text-xl font-bold text-[var(--accent)] sm:text-2xl">{packagePrice}</p>
           </div>
@@ -617,7 +618,10 @@ function Step2Payment({
             <h4 className="text-sm font-bold uppercase tracking-wider text-white">
               Booking Summary
             </h4>
-            <p className="mt-1 text-sm text-white/60">Tesla Model S 2024{packageDisplayName ? ` - ${packageDisplayName}` : ""}</p>
+            <p className="mt-1 text-sm text-white/60">
+              {SITE_VEHICLE_SHORT}
+              {packageDisplayName ? ` - ${packageDisplayName}` : ""}
+            </p>
           </div>
         </div>
         <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 sm:gap-4 sm:p-5">
@@ -680,7 +684,7 @@ function Step2Payment({
           <CreditCard className="h-4 w-4" />
           COMPLETE PAYMENT
         </h4>
-        <p className="mt-1 text-sm text-white/60">Complete your payment to secure your Tesla ride</p>
+        <p className="mt-1 text-sm text-white/60">Complete your payment to secure your ride</p>
 
         <div className="mt-4">
           <p className="mb-2 text-sm font-medium text-white/80">Payment Information</p>
@@ -820,7 +824,7 @@ function Step3Confirmation({
         <div className="mt-6 rounded-lg border border-neutral-700 bg-neutral-900/50 p-4 text-left">
           <p className="text-sm font-medium text-white/80">Booking Summary</p>
           <p className="mt-1 font-semibold text-white">{packageDisplayName}</p>
-          <p className="text-sm text-white/60">Tesla Model S 2024</p>
+          <p className="text-sm text-white/60">{SITE_VEHICLE_SHORT}</p>
           <div className="mt-3 space-y-1 text-sm text-white/80">
             <p>Route: {data.pickupLocation || "—"} → {data.dropoffLocation || "—"}</p>
             <p>Date: {data.pickupDate ? formatDateLong(data.pickupDate as Date) : "—"}</p>

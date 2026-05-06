@@ -27,8 +27,8 @@ export default function TermsOfService() {
                 1. Service Description
               </h2>
               <p className="mt-2">
-                Taxi Stockholm provides premium Tesla taxi services in the
-                Stockholm area. Our services include airport transfers, city
+                Sahotra Services AB provides premium taxi and transfer services in the
+                Stockholm region, including Arlanda and Skavsta airport routes. Our services include airport transfers, city
                 tours, and custom route bookings. All prices displayed are fixed
                 and in Swedish Kronor (SEK).
               </p>
