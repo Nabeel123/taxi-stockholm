@@ -38,6 +38,11 @@ const serviceOptionIcons: Record<string, LucideIcon> = {
   "map-pin": MapPin,
 };
 
+/** Validated on step 2 before pay / quote submit */
+const BOOKING_STEP2_CONTACT_FIELDS = ["fullName", "email", "phone"] as const satisfies readonly (
+  keyof BookingFormData
+)[];
+
 interface BookingFormProps {
   defaultService?: string;
   defaultPickup?: string;
@@ -280,14 +285,17 @@ export default function BookingForm({
           packageDisplayName={packageDisplayName ?? ""}
           service={service}
           onInvalid={onInvalid}
-          onCustomRouteComplete={handlePaymentComplete}
         />
         <Step2Payment
+          register={register}
+          errors={errors}
+          trigger={trigger}
           getValues={getValues}
           packagePrice={packagePrice}
           packageDisplayName={packageDisplayName ?? ""}
           localeTag={localeTag}
           onComplete={handlePaymentComplete}
+          onCustomRouteComplete={handlePaymentComplete}
         />
         <Step3Confirmation
           getValues={getValues}
@@ -315,7 +323,6 @@ type Step1Props = {
   packageDisplayName: string;
   service: { id?: string; name?: string; displayName?: string } | undefined;
   onInvalid: () => void;
-  onCustomRouteComplete: () => void;
 };
 
 function Step1Details({
@@ -333,17 +340,25 @@ function Step1Details({
   packageDisplayName,
   service,
   onInvalid,
-  onCustomRouteComplete,
 }: Step1Props) {
   const t = useTranslations("booking");
   const tSvc = useTranslations("services");
   const tSite = useTranslations("site");
-  const { nextStep, goToStep } = useWizard();
+  const { nextStep } = useWizard();
   const [isValidating, setIsValidating] = useState(false);
+
+  const step1FieldNames = [
+    "serviceType",
+    "pickupDate",
+    "pickupTime",
+    "passengers",
+    "pickupLocation",
+    "dropoffLocation",
+  ] as const satisfies readonly (keyof BookingFormData)[];
 
   const onNext = async () => {
     setIsValidating(true);
-    const valid = await trigger();
+    const valid = await trigger([...step1FieldNames]);
     const distanceOk =
       serviceType === "city-tour" ||
       serviceType === "custom-route" ||
@@ -351,12 +366,7 @@ function Step1Details({
       distanceState.withinLimit;
     setIsValidating(false);
     if (valid && distanceOk) {
-      if (serviceType === "custom-route") {
-        onCustomRouteComplete(); // Run completion logic (no payment step)
-        goToStep(2); // Skip Payment, go directly to Confirm
-      } else {
-        nextStep();
-      }
+      nextStep();
     } else {
       onInvalid();
     }
@@ -484,46 +494,6 @@ function Step1Details({
               )}
             </div>
           )}
-
-            <div>
-              <label htmlFor="fullName" className="mb-1 block text-sm font-medium text-white/80">{t("fullNameLabel")}</label>
-              <input
-                id="fullName"
-                {...register("fullName")}
-                className={`w-full rounded-lg border px-4 py-2.5 bg-[var(--dark-slate)]/50 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] ${errors.fullName ? "border-red-500" : "border-neutral-700"}`}
-                placeholder={t("fullNamePh")}
-              />
-              {errors.fullName && (
-                <p className="mt-3 block min-h-6 text-left text-sm leading-relaxed text-red-500">{errors.fullName.message}</p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="email" className="mb-1 block text-sm font-medium text-white/80">{t("emailLabel")}</label>
-              <input
-                id="email"
-                {...register("email")}
-                type="email"
-                className={`w-full rounded-lg border px-4 py-2.5 bg-[var(--dark-slate)]/50 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] ${errors.email ? "border-red-500" : "border-neutral-700"}`}
-                placeholder={t("emailPh")}
-              />
-              {errors.email && (
-                <p className="mt-3 block min-h-6 text-left text-sm leading-relaxed text-red-500">{errors.email.message}</p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="phone" className="mb-1 block text-sm font-medium text-white/80">{t("phoneLabel")}</label>
-              <input
-                id="phone"
-                {...register("phone")}
-                className={`w-full rounded-lg border px-4 py-2.5 bg-[var(--dark-slate)]/50 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] ${errors.phone ? "border-red-500" : "border-neutral-700"}`}
-                placeholder={t("phonePh")}
-              />
-              {errors.phone && (
-                <p className="mt-3 block min-h-6 text-left text-sm leading-relaxed text-red-500">{errors.phone.message}</p>
-              )}
-            </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
@@ -658,19 +628,6 @@ function Step1Details({
           </div>
         )}
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-white/80">{t("yourMessageLabel")}</label>
-          <textarea
-            {...register("message")}
-            rows={3}
-            className={`w-full rounded-lg border px-4 py-2.5 bg-[var(--dark-slate)]/50 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] ${errors.message ? "border-red-500" : "border-neutral-700"}`}
-            placeholder={t("yourMessagePh")}
-          />
-          {errors.message && (
-            <p className="mt-3 block min-h-[1.5rem] text-left text-sm leading-relaxed text-red-500">{errors.message.message}</p>
-          )}
-        </div>
-
         <button
           type="button"
           onClick={onNext}
@@ -687,8 +644,6 @@ function Step1Details({
               <Loader2 className="h-5 w-5 animate-spin" />
               {t("validating")}
             </span>
-          ) : serviceType === "custom-route" ? (
-            t("requestQuote")
           ) : (
             t("nextPayment")
           )}
@@ -701,27 +656,37 @@ function Step1Details({
 }
 
 function Step2Payment({
+  register,
+  errors,
+  trigger,
   getValues,
   packagePrice,
   packageDisplayName,
   localeTag,
   onComplete,
+  onCustomRouteComplete,
 }: {
+  register: ReturnType<typeof useForm<BookingFormData>>["register"];
+  errors: ReturnType<typeof useForm<BookingFormData>>["formState"]["errors"];
+  trigger: ReturnType<typeof useForm<BookingFormData>>["trigger"];
   getValues: () => BookingFormData;
   packagePrice: string;
   packageDisplayName: string;
   localeTag: string;
   onComplete: () => void;
+  onCustomRouteComplete: () => void;
 }) {
   const t = useTranslations("booking");
   const tSite = useTranslations("site");
   const { nextStep, previousStep } = useWizard();
   const [paying, setPaying] = useState(false);
+  const [quoteSubmitting, setQuoteSubmitting] = useState(false);
   const [stripePaymentFailed, setStripePaymentFailed] = useState(false);
   const [stripeReady, setStripeReady] = useState(false);
   const [stripeBusy, setStripeBusy] = useState(false);
   const stripePayFormId = useId();
   const data = getValues();
+  const isCustomRoute = data.serviceType === "custom-route";
 
   const paymentCompletedRef = useRef(false);
 
@@ -739,19 +704,38 @@ function Step2Payment({
 
   const serviceRecord = SERVICES.find((s) => s.id === data.serviceType);
   const stripeCheckoutActive =
+    !isCustomRoute &&
     !stripePaymentFailed &&
     isStripePaymentsConfigured() &&
     serviceRecord?.price !== null &&
     serviceRecord?.price !== undefined;
 
-  const handlePay = () => {
+  const handlePay = useCallback(async () => {
+    const ok = await trigger([...BOOKING_STEP2_CONTACT_FIELDS]);
+    if (!ok) return;
     setPaying(true);
     setTimeout(() => {
       onComplete();
       nextStep();
       setPaying(false);
     }, 800);
-  };
+  }, [trigger, onComplete, nextStep]);
+
+  const handleStripePayClick = useCallback(async () => {
+    const ok = await trigger([...BOOKING_STEP2_CONTACT_FIELDS]);
+    if (!ok) return;
+    const form = document.getElementById(stripePayFormId);
+    if (form instanceof HTMLFormElement) form.requestSubmit();
+  }, [trigger, stripePayFormId]);
+
+  const handleCustomQuote = useCallback(async () => {
+    setQuoteSubmitting(true);
+    const ok = await trigger([...BOOKING_STEP2_CONTACT_FIELDS]);
+    setQuoteSubmitting(false);
+    if (!ok) return;
+    onCustomRouteComplete();
+    nextStep();
+  }, [trigger, onCustomRouteComplete, nextStep]);
 
   return (
     <div className="mt-6 space-y-6">
@@ -823,6 +807,70 @@ function Step2Payment({
         </div>
       </div>
 
+      <div className="rounded-xl border border-neutral-700 bg-neutral-800/50 p-5">
+        <h4 className="flex items-center gap-2 text-sm font-semibold text-[var(--accent)]">
+          <Users className="h-4 w-4 text-[var(--accent)]" aria-hidden />
+          {t("passengerDetails")}
+        </h4>
+        <div className="mt-4 space-y-4">
+          <div>
+            <label htmlFor="fullName-step2" className="mb-1 block text-sm font-medium text-white/80">{t("fullNameLabel")}</label>
+            <input
+              id="fullName-step2"
+              {...register("fullName")}
+              autoComplete="name"
+              className={`w-full rounded-lg border px-4 py-2.5 bg-[var(--dark-slate)]/50 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] ${errors.fullName ? "border-red-500" : "border-neutral-700"}`}
+              placeholder={t("fullNamePh")}
+            />
+            {errors.fullName && (
+              <p className="mt-2 text-sm leading-relaxed text-red-500">{errors.fullName.message}</p>
+            )}
+          </div>
+          <div>
+            <label htmlFor="email-step2" className="mb-1 block text-sm font-medium text-white/80">{t("emailLabel")}</label>
+            <input
+              id="email-step2"
+              {...register("email")}
+              type="email"
+              autoComplete="email"
+              className={`w-full rounded-lg border px-4 py-2.5 bg-[var(--dark-slate)]/50 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] ${errors.email ? "border-red-500" : "border-neutral-700"}`}
+              placeholder={t("emailPh")}
+            />
+            {errors.email && (
+              <p className="mt-2 text-sm leading-relaxed text-red-500">{errors.email.message}</p>
+            )}
+          </div>
+          <div>
+            <label htmlFor="phone-step2" className="mb-1 block text-sm font-medium text-white/80">{t("phoneLabel")}</label>
+            <input
+              id="phone-step2"
+              {...register("phone")}
+              type="tel"
+              autoComplete="tel"
+              className={`w-full rounded-lg border px-4 py-2.5 bg-[var(--dark-slate)]/50 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] ${errors.phone ? "border-red-500" : "border-neutral-700"}`}
+              placeholder={t("phonePh")}
+            />
+            {errors.phone && (
+              <p className="mt-2 text-sm leading-relaxed text-red-500">{errors.phone.message}</p>
+            )}
+          </div>
+          <div>
+            <label htmlFor="message-step2" className="mb-1 block text-sm font-medium text-white/80">{t("yourMessageLabel")}</label>
+            <textarea
+              id="message-step2"
+              {...register("message")}
+              rows={3}
+              className={`w-full rounded-lg border px-4 py-2.5 bg-[var(--dark-slate)]/50 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] ${errors.message ? "border-red-500" : "border-neutral-700"}`}
+              placeholder={t("yourMessagePh")}
+            />
+            {errors.message && (
+              <p className="mt-2 text-sm leading-relaxed text-red-500">{errors.message.message}</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {!isCustomRoute && (
       <div className="rounded-xl border border-neutral-700 bg-neutral-800/50 p-5">
         <h4 className="flex items-center gap-2 text-sm font-semibold text-[var(--accent)]">
           <CreditCard className="h-4 w-4" />
@@ -913,6 +961,7 @@ function Step2Payment({
           )}
         </div>
       </div>
+      )}
 
       <div className="flex gap-3">
         <button
@@ -922,10 +971,26 @@ function Step2Payment({
         >
           {t("back")}
         </button>
-        {stripeCheckoutActive ? (
+        {isCustomRoute ? (
           <button
-            type="submit"
-            form={stripePayFormId}
+            type="button"
+            onClick={() => void handleCustomQuote()}
+            disabled={quoteSubmitting}
+            className="flex-1 rounded-lg bg-[var(--accent)] py-3 font-bold text-black transition-all hover:scale-[1.01] hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {quoteSubmitting ? (
+              <span className="flex items-center justify-center gap-2">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                {t("validating")}
+              </span>
+            ) : (
+              t("requestQuote")
+            )}
+          </button>
+        ) : stripeCheckoutActive ? (
+          <button
+            type="button"
+            onClick={() => void handleStripePayClick()}
             disabled={!stripeReady || stripeBusy}
             className="flex-1 rounded-lg bg-[var(--accent)] py-3 font-bold text-black transition-all hover:scale-[1.01] hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-40"
           >
@@ -941,7 +1006,7 @@ function Step2Payment({
         ) : (
           <button
             type="button"
-            onClick={handlePay}
+            onClick={() => void handlePay()}
             disabled={paying}
             className="flex-1 rounded-lg bg-[var(--accent)] py-3 font-bold text-black transition-all hover:scale-[1.01] hover:bg-[var(--accent-hover)] disabled:opacity-50"
           >
