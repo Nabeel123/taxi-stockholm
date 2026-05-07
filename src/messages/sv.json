@@ -382,6 +382,8 @@
     "passengersSummary": "Passagerare: {passengers}",
     "totalSummary": "Totalt: {price}",
     "done": "Klar",
+    "redirectHomeNotice": "Du omdirigeras till startsidan.",
+    "redirectSecondsShort": "sek",
     "backToHomeAria": "Till startsidan",
     "bookAnotherAria": "Boka en ny resa"
   }

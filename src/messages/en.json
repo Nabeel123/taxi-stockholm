@@ -382,6 +382,8 @@
     "passengersSummary": "Passengers: {passengers}",
     "totalSummary": "Total: {price}",
     "done": "Done",
+    "redirectHomeNotice": "You're being redirected to the home page.",
+    "redirectSecondsShort": "s",
     "backToHomeAria": "Back to home",
     "bookAnotherAria": "Book another ride"
   }

@@ -1,10 +1,9 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-import { useRouter, usePathname } from "@/i18n/navigation";
-import { useSearchParams } from "next/navigation";
+import { usePathname } from "@/i18n/navigation";
 
 const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 const stripePromise = publishableKey ? loadStripe(publishableKey) : null;
@@ -16,29 +15,6 @@ export function isStripePaymentsConfigured(): boolean {
 /** Deprecated alias — use isStripePaymentsConfigured */
 export function isStripeWalletConfigured(): boolean {
   return isStripePaymentsConfigured();
-}
-
-function StripeReturnCleanup({ onPaid }: { onPaid: () => void }) {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
-  const onPaidRef = useRef(onPaid);
-  const fired = useRef(false);
-
-  useEffect(() => {
-    onPaidRef.current = onPaid;
-  }, [onPaid]);
-
-  useEffect(() => {
-    const status = searchParams.get("redirect_status");
-    const pi = searchParams.get("payment_intent");
-    if (status !== "succeeded" || !pi || fired.current) return;
-    fired.current = true;
-    onPaidRef.current();
-    router.replace(pathname);
-  }, [searchParams, router, pathname]);
-
-  return null;
 }
 
 type PaymentFormProps = {
@@ -180,9 +156,6 @@ export function StripePaymentSection({
 
   return (
     <>
-      <Suspense fallback={null}>
-        <StripeReturnCleanup onPaid={() => onPaidRef.current()} />
-      </Suspense>
       <Elements
         stripe={stripePromise}
         options={{

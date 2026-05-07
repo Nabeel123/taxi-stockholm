@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, useId } from "react";
+import { useState, useEffect, useCallback, useRef, useId, Suspense, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import DatePicker from "react-datepicker";
-import { Link } from "@/i18n/navigation";
+import { useRouter, usePathname } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import { Wizard, useWizard } from "react-use-wizard";
 import confetti from "canvas-confetti";
@@ -23,6 +23,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { bookingSchema, type BookingFormData } from "@/lib/booking-schema";
 import { PASSENGER_OPTIONS, SERVICE_OPTIONS } from "@/lib/booking-schema";
 import { calculateRouteDistance, MAX_DISTANCE_KM } from "@/lib/distance";
@@ -42,6 +43,12 @@ const serviceOptionIcons: Record<string, LucideIcon> = {
 const BOOKING_STEP2_CONTACT_FIELDS = ["fullName", "email", "phone"] as const satisfies readonly (
   keyof BookingFormData
 )[];
+
+const REDIRECT_HOME_MS = 10000;
+
+/** Wizard step indices: 0 details, 1 payment/contact, 2 confirmation */
+const BOOKING_STEP_PAYMENT = 1;
+const BOOKING_STEP_CONFIRM = 2;
 
 interface BookingFormProps {
   defaultService?: string;
@@ -76,6 +83,31 @@ function formatDateLong(d: Date | string, localeTag: string): string {
       year: "numeric",
     }) ?? "—"
   );
+}
+
+/** Matches bookingSchema rules for step-1 trip fields (locations, date, time, passengers, distance). */
+function isStep1TripComplete(args: {
+  serviceType: string;
+  pickupDate: Date | undefined;
+  pickupTime: string | undefined;
+  passengers: string | undefined;
+  pickupLocation: string | undefined;
+  dropoffLocation: string | undefined;
+  distanceBlocksNext: boolean;
+}): boolean {
+  if (args.distanceBlocksNext) return false;
+  const pickup = (args.pickupLocation ?? "").trim();
+  if (pickup.length < 2) return false;
+  if (args.serviceType !== "city-tour") {
+    const drop = (args.dropoffLocation ?? "").trim();
+    if (drop.length < 2) return false;
+  }
+  const d = args.pickupDate;
+  if (!(d instanceof Date) || Number.isNaN(d.getTime())) return false;
+  const t = (args.pickupTime ?? "").trim();
+  if (!/^([01]?\d|2[0-3]):[0-5]\d$/.test(t)) return false;
+  if (!args.passengers || !PASSENGER_OPTIONS.some((o) => o.value === args.passengers)) return false;
+  return true;
 }
 
 function StepIndicator({
@@ -121,7 +153,7 @@ function WizardHeader({ labels }: { labels: readonly [string, string, string] })
   return <StepIndicator activeStep={activeStep} labels={labels} />;
 }
 
-export default function BookingForm({
+function BookingFormInner({
   defaultService,
   defaultPickup,
   defaultDropoff,
@@ -169,6 +201,19 @@ export default function BookingForm({
   const tCommon = useTranslations("common");
   const arlandaLine = tBooking("arlandaAirport");
   const stepLabels = [tBooking("stepDetails"), tBooking("stepPayment"), tBooking("stepConfirm")] as const;
+
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const routerStripeReturn = useRouter();
+  const paymentIntentFromStripe = searchParams.get("payment_intent");
+  const stripeRedirectStatus = searchParams.get("redirect_status");
+  const stripeHostedRedirect =
+    Boolean(paymentIntentFromStripe) && stripeRedirectStatus != null && stripeRedirectStatus !== "";
+  const wizardStartIndex = stripeHostedRedirect
+    ? stripeRedirectStatus === "succeeded"
+      ? BOOKING_STEP_CONFIRM
+      : BOOKING_STEP_PAYMENT
+    : 0;
 
   // Apply URL/default params on mount or when defaults change
   useEffect(() => {
@@ -263,9 +308,36 @@ export default function BookingForm({
     onSuccess?.(data);
   }, [getValues, distanceState.distanceKm, onSuccess]);
 
+  useEffect(() => {
+    if (
+      !stripeHostedRedirect ||
+      !paymentIntentFromStripe ||
+      stripeRedirectStatus == null ||
+      stripeRedirectStatus === ""
+    ) {
+      return;
+    }
+    const dedupeKey = `booking-stripe-return:${paymentIntentFromStripe}:${stripeRedirectStatus}`;
+    if (typeof window !== "undefined" && sessionStorage.getItem(dedupeKey)) return;
+    if (typeof window !== "undefined") sessionStorage.setItem(dedupeKey, "1");
+
+    if (stripeRedirectStatus === "succeeded") {
+      handlePaymentComplete();
+    }
+    routerStripeReturn.replace(pathname);
+  }, [
+    stripeHostedRedirect,
+    paymentIntentFromStripe,
+    stripeRedirectStatus,
+    pathname,
+    routerStripeReturn,
+    handlePaymentComplete,
+  ]);
+
   return (
     <div className={shake ? "animate-shake" : ""}>
       <Wizard
+        startIndex={wizardStartIndex}
         header={
           serviceType === "custom-route" ? null : <WizardHeader labels={stepLabels} />
         }
@@ -305,6 +377,14 @@ export default function BookingForm({
         />
       </Wizard>
     </div>
+  );
+}
+
+export default function BookingForm(props: BookingFormProps) {
+  return (
+    <Suspense fallback={null}>
+      <BookingFormInner {...props} />
+    </Suspense>
   );
 }
 
@@ -356,7 +436,46 @@ function Step1Details({
     "dropoffLocation",
   ] as const satisfies readonly (keyof BookingFormData)[];
 
+  const pickupDate = watch("pickupDate");
+  const pickupTime = watch("pickupTime");
+  const passengers = watch("passengers");
+  const pickupLoc = watch("pickupLocation");
+  const dropoffLoc = watch("dropoffLocation");
+
+  const distanceBlocksNext =
+    serviceType !== "city-tour" &&
+    serviceType !== "custom-route" &&
+    distanceState.distanceKm !== null &&
+    !distanceState.withinLimit;
+
+  const step1TripComplete = useMemo(
+    () =>
+      isStep1TripComplete({
+        serviceType,
+        pickupDate,
+        pickupTime,
+        passengers,
+        pickupLocation: pickupLoc,
+        dropoffLocation: dropoffLoc,
+        distanceBlocksNext,
+      }),
+    [
+      serviceType,
+      pickupDate,
+      pickupTime,
+      passengers,
+      pickupLoc,
+      dropoffLoc,
+      distanceBlocksNext,
+    ],
+  );
+
   const onNext = async () => {
+    if (!step1TripComplete) {
+      await trigger([...step1FieldNames]);
+      onInvalid();
+      return;
+    }
     setIsValidating(true);
     const valid = await trigger([...step1FieldNames]);
     const distanceOk =
@@ -631,12 +750,7 @@ function Step1Details({
         <button
           type="button"
           onClick={onNext}
-          disabled={
-            serviceType !== "city-tour" &&
-            serviceType !== "custom-route" &&
-            distanceState.distanceKm !== null &&
-            !distanceState.withinLimit
-          }
+          disabled={!step1TripComplete || isValidating}
           className="w-full rounded-lg bg-[var(--accent)] py-3 font-bold text-black transition-all duration-300 ease-out hover:scale-[1.01] hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isValidating ? (
@@ -1039,9 +1153,10 @@ function Step3Confirmation({
 }) {
   const t = useTranslations("booking");
   const tSite = useTranslations("site");
-  const { previousStep, goToStep } = useWizard();
+  const router = useRouter();
   const data = getValues();
   const confettiFiredRef = useRef(false);
+  const [secondsLeft, setSecondsLeft] = useState(Math.ceil(REDIRECT_HOME_MS / 1000));
 
   useEffect(() => {
     if (confettiFiredRef.current) return;
@@ -1054,6 +1169,15 @@ function Step3Confirmation({
       clearTimeout(t2);
     };
   }, []);
+
+  useEffect(() => {
+    if (secondsLeft <= 0) {
+      router.replace("/");
+      return;
+    }
+    const id = window.setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
+    return () => clearTimeout(id);
+  }, [secondsLeft, router]);
 
   const isCustomRoute = data.serviceType === "custom-route";
 
@@ -1103,20 +1227,26 @@ function Step3Confirmation({
           )}
         </div>
 
-        <div className="mt-6 flex gap-3">
-          <button
-            type="button"
-            onClick={() => (isCustomRoute ? goToStep(0) : previousStep())}
-            className="flex-1 rounded-lg border border-neutral-600 py-2.5 font-medium text-white hover:bg-neutral-800"
-          >
-            {t("back")}
-          </button>
-          <Link
-            href="/"
-            className="flex-1 rounded-lg bg-[var(--accent)] py-2.5 text-center font-bold text-black transition-all hover:bg-[var(--accent-hover)]"
-          >
-            {t("done")}
-          </Link>
+        <div
+          className="mt-6 rounded-lg border border-[var(--accent)]/35 bg-neutral-950/70 px-4 py-4 text-center"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          <p className="text-sm text-white/75">{t("redirectHomeNotice")}</p>
+          <p className="mt-2 text-3xl font-bold tabular-nums text-[var(--accent)] sm:text-4xl">
+            {secondsLeft > 0 ? secondsLeft : "…"}
+            <span className="ml-1.5 text-lg font-semibold text-white/50 sm:text-xl">
+              {t("redirectSecondsShort")}
+            </span>
+          </p>
+          <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-neutral-700">
+            <motion.div
+              className="h-full origin-left bg-[var(--accent)]"
+              initial={{ scaleX: 1 }}
+              animate={{ scaleX: 0 }}
+              transition={{ duration: REDIRECT_HOME_MS / 1000, ease: "linear" }}
+            />
+          </div>
         </div>
       </motion.div>
     </div>
