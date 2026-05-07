@@ -43,6 +43,8 @@ export const COMPANY = {
     company: "sahotraservicesab@gmail.com",
   },
   address: {
+    street: "Ormbergsvägen 7",
+    postalCity: "193 36 Sigtuna",
     line: "Ormbergsvägen 7, 193 36 Sigtuna",
     mapsUrl:
       "https://www.google.com/maps/search/?api=1&query=" +
