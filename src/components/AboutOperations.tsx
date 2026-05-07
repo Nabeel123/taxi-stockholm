@@ -30,7 +30,7 @@ export default function AboutOperations() {
   });
 
   return (
-    <section className="relative overflow-hidden py-16 sm:py-20 md:py-24" id="about">
+    <section className="relative overflow-hidden py-14 sm:py-20 md:py-24" id="about">
       <div className="pointer-events-none absolute inset-0" aria-hidden>
         <Image
           src="/about.jpg"

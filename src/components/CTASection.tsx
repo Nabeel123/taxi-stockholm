@@ -33,7 +33,10 @@ export default function CTASection() {
   const t = useTranslations("cta");
   const tSite = useTranslations("site");
   const tel = COMPANY.phoneE164.replace(/\s/g, "");
-  const waHref = `https://wa.me/${COMPANY.whatsappDigits}`;
+  const vasterasOfferLine = tSite("vastervasOffer");
+  const vasterasWhatsappHref = `https://wa.me/${COMPANY.whatsappDigits}?text=${encodeURIComponent(
+    t("vasterasWhatsappLead", { offer: vasterasOfferLine }),
+  )}`;
 
   return (
     <motion.section
@@ -61,18 +64,18 @@ export default function CTASection() {
             <span className="font-semibold text-[var(--accent)]">{t("bannerWebsite")}</span> {t("bannerOr")}{" "}
             <span className="font-semibold text-emerald-200">{t("bannerWhatsapp")}</span>
           </p>
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+          <div className="mt-4 flex w-full flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-3">
             <Link
-              href="/book"
-              className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-[var(--secondary)] transition hover:bg-[var(--accent-hover)]"
+              href={{ pathname: "/book", query: { service: "vasteras-route" } }}
+              className="inline-flex min-h-12 w-full touch-manipulation items-center justify-center rounded-xl bg-[var(--accent)] px-5 py-3 text-sm font-bold uppercase tracking-wide text-[var(--secondary)] transition hover:bg-[var(--accent-hover)] sm:w-auto sm:min-h-11"
             >
               {t("bookOnline")}
             </Link>
             <a
-              href={waHref}
+              href={vasterasWhatsappHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-h-11 items-center justify-center rounded-xl border-2 border-[var(--whatsapp-green)] bg-[var(--whatsapp-green)]/25 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[var(--whatsapp-green)]/35"
+              className="inline-flex min-h-12 w-full touch-manipulation items-center justify-center rounded-xl border-2 border-[var(--whatsapp-green)] bg-[var(--whatsapp-green)]/25 px-5 py-3 text-sm font-bold text-white transition hover:bg-[var(--whatsapp-green)]/35 sm:w-auto sm:min-h-11"
             >
               WhatsApp
             </a>

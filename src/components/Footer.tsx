@@ -28,7 +28,10 @@ export default function Footer() {
   };
 
   return (
-    <footer id="contact" className="bg-[var(--dark-slate)] py-14 sm:py-16">
+    <footer
+      id="contact"
+      className="bg-[var(--dark-slate)] pb-[max(3.25rem,calc(env(safe-area-inset-bottom,0px)+2.75rem))] pt-14 sm:pb-[max(3.75rem,calc(env(safe-area-inset-bottom,0px)+2.75rem))] sm:pt-16"
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
           <div className="lg:col-span-2">
@@ -64,7 +67,7 @@ export default function Footer() {
                   <Link
                     href={item.href}
                     onClick={(e) => handleHashLink(e, item.href)}
-                    className="text-sm text-white/80 transition-colors hover:text-white"
+                    className="-mx-2 block min-h-11 px-2 py-2.5 text-sm text-white/80 transition-colors hover:text-white md:min-h-0 md:p-0"
                   >
                     {item.label}
                   </Link>

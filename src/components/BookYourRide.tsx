@@ -17,6 +17,26 @@ import type { ServiceId } from "@/lib/constants";
 import { serviceIdToMessageKey } from "@/lib/service-messages";
 import { COMPANY } from "@/lib/site";
 
+/** WhatsApp: *text* renders as bold. Strip stray asterisks from user-entered fragments. */
+function waBold(segment: string): string {
+  return `*${segment.replace(/\*/g, "")}*`;
+}
+
+function waSafeCell(text: string): string {
+  return text.replace(/\r?\n/g, " ").replace(/```/g, "'''").trim() || "—";
+}
+
+/** Plain-text table inside a monospace block (readable in WhatsApp). */
+function buildWhatsappDetailTable(rows: { label: string; value: string }[]): string {
+  const cleanRows = rows.map((r) => ({
+    label: r.label.replace(/\*/g, ""),
+    value: waSafeCell(r.value),
+  }));
+  const labelW = Math.max(6, ...cleanRows.map((r) => r.label.length));
+  const inner = cleanRows.map((r) => `${r.label.padEnd(labelW)} | ${r.value}`).join("\n");
+  return `\`\`\`\n${inner}\n\`\`\``;
+}
+
 const icons: Record<string, LucideIcon> = {
   "plane-arrival": Plane,
   "plane-departure": Plane,
@@ -115,7 +135,6 @@ const inputClass =
 export default function BookYourRide() {
   const t = useTranslations("bookYourRide");
   const tSvc = useTranslations("services");
-  const tSite = useTranslations("site");
   const twa = useTranslations("bookYourRide.wa");
 
   const [step, setStep] = useState<Step>(1);
@@ -139,26 +158,45 @@ export default function BookYourRide() {
     const k = serviceIdToMessageKey(selectedId);
     const name = tSvc(`${k}.name`);
     const desc = tSvc(`${k}.description`);
-    const lines = [
-      twa("title", { company: COMPANY.legalName }),
-      twa("brand", { brand: tSite("brandTitle") }),
-      "",
-      `${twa("service")}: ${name}`,
-      `${twa("route")}: ${desc}`,
-      `${twa("price")}: ${service.priceLabel ?? ""}`,
-      "",
-      `${twa("name")}: ${form.fullName}`,
-      `${twa("phone")}: ${form.phone}`,
-      `${twa("date")}: ${form.date}`,
-      `${twa("time")}: ${form.time}`,
-      `${twa("passengers")}: ${form.passengers}`,
+
+    const tableRows = [
+      { label: twa("name"), value: form.fullName },
+      { label: twa("phone"), value: form.phone },
+      { label: twa("date"), value: form.date },
+      { label: twa("time"), value: form.time },
+      { label: twa("passengers"), value: String(form.passengers) },
     ];
     if (form.notes.trim()) {
-      lines.push("", `${twa("notes")}: ${form.notes.trim()}`);
+      tableRows.push({ label: twa("notes"), value: form.notes.trim() });
     }
-    const text = lines.join("\n");
+
+    const priceLine = service.priceLabel?.trim()
+      ? `${waBold(twa("price"))} ${service.priceLabel.trim()}`
+      : waBold(twa("price"));
+
+    const packageBlock = [
+      waBold(twa("packageHeading")),
+      "",
+      waBold(name),
+      "",
+      waBold(twa("routeLabel")),
+      desc,
+      "",
+      priceLine,
+    ].join("\n");
+
+    const text = [
+      waBold(twa("bookingRequestTitle")),
+      "",
+      packageBlock,
+      "",
+      waBold(twa("otherDetailsHeading")),
+      "",
+      buildWhatsappDetailTable(tableRows),
+    ].join("\n");
+
     return `https://wa.me/${WHATSAPP_DIGITS}?text=${encodeURIComponent(text)}`;
-  }, [selectedId, selectedService, form, tSvc, tSite, twa]);
+  }, [selectedId, selectedService, form, tSvc, twa]);
 
   const minDate = new Date().toISOString().split("T")[0];
 
@@ -170,7 +208,7 @@ export default function BookYourRide() {
 
   return (
     <section
-      className="overflow-hidden bg-[var(--book-wizard-bg)] py-16 sm:py-20 md:py-24"
+      className="scroll-mt-20 overflow-hidden bg-[var(--book-wizard-bg)] py-16 sm:scroll-mt-24 sm:py-20 md:py-24"
       id="services"
     >
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:max-w-4xl lg:px-8">
@@ -198,7 +236,7 @@ export default function BookYourRide() {
                 exit={{ opacity: 0, x: -12 }}
                 transition={{ duration: 0.22 }}
               >
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2 min-[400px]:gap-4">
                   {SERVICES.map((service) => {
                     const Icon = icons[service.icon] || MapPin;
                     const isSelected = selectedId === service.id;
@@ -209,8 +247,8 @@ export default function BookYourRide() {
                         key={service.id}
                         type="button"
                         onClick={() => setSelectedId(service.id)}
-                        className={`relative flex flex-col rounded-2xl border p-4 text-left shadow-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] sm:p-5 ${
-                          spanVasteras ? "sm:col-span-2" : ""
+                        className={`touch-manipulation relative flex min-h-[10.5rem] flex-col rounded-2xl border p-4 text-left shadow-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] active:scale-[0.99] sm:min-h-0 sm:p-5 ${
+                          spanVasteras ? "min-[400px]:col-span-2" : ""
                         } ${
                           isSelected
                             ? "border-2 border-[var(--accent)] bg-[var(--book-card-selected)] shadow-md"
@@ -225,7 +263,7 @@ export default function BookYourRide() {
                         <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--book-wizard-text)]">
                           <Icon className="h-5 w-5" strokeWidth={1.75} />
                         </div>
-                        <h3 className="pr-12 font-heading text-xs font-bold uppercase tracking-wide text-[var(--book-wizard-text)] sm:pr-14 sm:text-sm">
+                        <h3 className="pr-11 font-heading text-[0.6875rem] font-bold uppercase leading-snug tracking-wide text-[var(--book-wizard-text)] min-[400px]:pr-14 min-[400px]:text-xs sm:text-sm">
                           {tSvc(`${mk}.name`)}
                         </h3>
                         <p className="mt-2 text-[11px] leading-snug text-neutral-600 sm:text-xs">

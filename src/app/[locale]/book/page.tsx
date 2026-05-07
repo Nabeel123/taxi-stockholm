@@ -88,7 +88,7 @@ export default function BookPage() {
   return (
     <div className="min-h-screen bg-[var(--dark-slate)]">
       <Header />
-      <main className="pt-24 pb-12 sm:pt-28 sm:pb-16 md:pt-32 md:pb-20">
+      <main className="pb-[max(3rem,calc(env(safe-area-inset-bottom,0px)+2.5rem))] pt-[calc(env(safe-area-inset-top,0px)+4rem)] sm:pt-[calc(env(safe-area-inset-top,0px)+4.75rem)] md:pt-[calc(env(safe-area-inset-top,0px)+5.25rem)] md:pb-20">
         <Suspense fallback={<BookPageLoading />}>
           <BookContent />
         </Suspense>

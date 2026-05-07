@@ -28,12 +28,12 @@ function isNavLinkActive(pathname: string, locationHash: string, href: string): 
   return locationHash === anchor;
 }
 
-/** Shared classes: accent underline only when active */
+/** Active link: navy text + underline (readable on white; avoids low-contrast yellow-on-white). */
 function navLinkClassName(active: boolean): string {
   const base =
     "font-medium uppercase tracking-wide transition-colors duration-300 ease-out text-sm lg:text-sm";
   if (active) {
-    return `${base} text-accent underline decoration-accent decoration-2 underline-offset-[10px]`;
+    return `${base} text-primary underline decoration-primary decoration-2 underline-offset-[10px]`;
   }
   return `${base} text-neutral-600 hover:text-primary`;
 }
@@ -97,16 +97,16 @@ export default function Header() {
   );
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b border-neutral-200 bg-white shadow-sm">
-      <div className="relative mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 sm:h-16 sm:gap-4 sm:px-6 lg:px-8">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b border-neutral-200/90 bg-white/90 shadow-sm backdrop-blur-md supports-[backdrop-filter]:bg-white/85 pt-[env(safe-area-inset-top,0px)]">
+      <div className="relative mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-4 sm:h-16 sm:gap-4 sm:px-6 lg:px-8">
         <Link
           href="/"
-          className="flex shrink-0 items-center"
+          className="flex min-h-11 min-w-11 shrink-0 touch-manipulation items-center"
           aria-label={t("homeAria")}
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded bg-accent sm:h-9 sm:w-9">
+          <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-accent shadow-sm sm:h-10 sm:w-10">
             <svg
-              className="h-4 w-4 text-black sm:h-5 sm:w-5"
+              className="h-[1.125rem] w-[1.125rem] text-black sm:h-5 sm:w-5"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -136,51 +136,75 @@ export default function Header() {
           })}
         </nav>
 
-        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
           <LanguageSwitcher />
           <Link
             href="/book"
-            className="rounded-lg bg-accent px-4 py-2 text-sm font-bold uppercase tracking-wide text-black shadow-md transition-all duration-300 ease-out hover:bg-accent-hover hover:shadow-lg sm:px-5 sm:py-2.5"
+            className="touch-manipulation rounded-[10px] bg-accent px-3.5 py-2.5 text-[11px] font-bold uppercase leading-none tracking-wide text-black shadow-md transition-all duration-200 ease-out hover:bg-accent-hover hover:shadow-lg sm:text-sm sm:px-5 sm:py-3"
           >
             {t("bookNow")}
           </Link>
           <button
             type="button"
-            className="-m-2 p-2 text-neutral-600 hover:text-primary lg:hidden"
+            className="flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-[10px] text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-primary lg:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-expanded={mobileMenuOpen}
             aria-label={t("toggleMenu")}
           >
-            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {mobileMenuOpen ? <X className="h-6 w-6" strokeWidth={2} /> : <Menu className="h-6 w-6" strokeWidth={2} />}
           </button>
         </div>
       </div>
 
       <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="border-t border-neutral-200 bg-white lg:hidden"
-          >
-            <nav className="flex flex-col gap-1 px-4 py-4">
-              {navLinks.map((link) => {
-                const active = isNavLinkActive(pathname, locationHash, link.href);
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={(e) => handleNavClick(e, link.href)}
-                    className={`py-3 ${navLinkClassName(active)}`}
-                    aria-current={active ? "page" : undefined}
-                  >
-                    {link.label}
-                  </Link>
-                );
-              })}
-            </nav>
-          </motion.div>
-        )}
+        {mobileMenuOpen ? (
+          <>
+            <motion.button
+              key="nav-backdrop"
+              type="button"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              aria-hidden
+              tabIndex={-1}
+              className="fixed inset-x-0 bottom-0 z-40 bg-[color-mix(in_oklab,var(--primary)_42%,transparent)] backdrop-blur-[2px] lg:hidden top-[calc(env(safe-area-inset-top,0px)+3.5rem)] sm:top-[calc(env(safe-area-inset-top,0px)+4rem)]"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            <motion.div
+              key="nav-panel"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              className="relative z-50 lg:hidden"
+            >
+              <nav
+                className="mx-3 mb-3 flex flex-col gap-0.5 rounded-2xl border border-neutral-200/90 bg-white p-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] shadow-xl shadow-neutral-900/10"
+                aria-label={t("mobileNavAria")}
+              >
+                {navLinks.map((link) => {
+                  const active = isNavLinkActive(pathname, locationHash, link.href);
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={(e) => handleNavClick(e, link.href)}
+                      className={`touch-manipulation rounded-xl border-l-[3px] px-4 py-3.5 font-heading text-[0.9375rem] font-bold uppercase tracking-[0.14em] transition-colors sm:text-sm ${
+                        active
+                          ? "border-primary bg-neutral-100 text-primary"
+                          : "border-transparent text-neutral-600 hover:bg-neutral-50 active:bg-neutral-100"
+                      }`}
+                      aria-current={active ? "page" : undefined}
+                    >
+                      {link.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </motion.div>
+          </>
+        ) : null}
       </AnimatePresence>
     </header>
   );

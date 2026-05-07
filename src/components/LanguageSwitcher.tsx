@@ -11,17 +11,17 @@ export default function LanguageSwitcher() {
 
   return (
     <div
-      className="flex items-center gap-0.5 rounded-full border border-neutral-200 bg-neutral-50 p-0.5 text-[10px] font-bold uppercase tracking-wide sm:text-xs"
+      className="flex min-h-[2.75rem] items-center gap-0.5 rounded-full border border-neutral-200 bg-neutral-50 p-1 text-[10px] font-bold uppercase tracking-wide sm:min-h-0 sm:text-xs"
       role="group"
       aria-label={t("label")}
     >
       <button
         type="button"
         onClick={() => router.replace(pathname, { locale: "sv" })}
-        className={`rounded-full px-2 py-1 transition sm:px-2.5 ${
+        className={`touch-manipulation rounded-full px-3 py-2 transition sm:px-2.5 sm:py-1 ${
           locale === "sv"
             ? "bg-[var(--accent)] text-black shadow-sm"
-            : "text-neutral-600 hover:text-neutral-900"
+            : "text-neutral-600 hover:text-neutral-900 active:bg-neutral-200/80"
         }`}
         aria-pressed={locale === "sv"}
       >
@@ -30,10 +30,10 @@ export default function LanguageSwitcher() {
       <button
         type="button"
         onClick={() => router.replace(pathname, { locale: "en" })}
-        className={`rounded-full px-2 py-1 transition sm:px-2.5 ${
+        className={`touch-manipulation rounded-full px-3 py-2 transition sm:px-2.5 sm:py-1 ${
           locale === "en"
             ? "bg-[var(--accent)] text-black shadow-sm"
-            : "text-neutral-600 hover:text-neutral-900"
+            : "text-neutral-600 hover:text-neutral-900 active:bg-neutral-200/80"
         }`}
         aria-pressed={locale === "en"}
       >

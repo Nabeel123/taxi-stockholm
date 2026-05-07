@@ -37,6 +37,7 @@
     "reviews": "Reviews",
     "bookNow": "Book Now",
     "toggleMenu": "Toggle menu",
+    "mobileNavAria": "Main navigation",
     "homeAria": "Home"
   },
   "footer": {
@@ -106,10 +107,10 @@
       "confirm": "Confirm"
     },
     "wa": {
-      "title": "🚖 Booking request — {company}",
-      "brand": "{brand}",
-      "service": "Service",
-      "route": "Route / details",
+      "bookingRequestTitle": "Booking Request",
+      "packageHeading": "Selected package",
+      "routeLabel": "Route / details",
+      "otherDetailsHeading": "Trip & contact",
       "price": "Price",
       "name": "Name",
       "phone": "Phone",
@@ -206,6 +207,7 @@
     "bannerWebsite": "website",
     "bannerOr": "or",
     "bannerWhatsapp": "WhatsApp.",
+    "vasterasWhatsappLead": "For {offer} - I am interested to know.",
     "bookOnline": "Book online",
     "needRide": "Need a ride right now?",
     "sublead": "Fast pickups across Stockholm and airport routes — professional drivers and a premium environment-friendly fleet.",

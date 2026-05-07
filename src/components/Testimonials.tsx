@@ -59,7 +59,7 @@ export default function Testimonials() {
     const el = scrollerRef.current;
     if (!el) return;
     const isDesktop = window.matchMedia("(min-width: 768px)").matches;
-    const visible = isDesktop ? 4 : 3;
+    const visible = isDesktop ? 4 : 2;
     const gap = 16;
     const cardWidth = (el.clientWidth - gap * (visible - 1)) / visible;
     const delta = (cardWidth + gap) * (direction === "next" ? 1 : -1);
@@ -68,7 +68,7 @@ export default function Testimonials() {
 
   return (
     <section
-      className="relative overflow-hidden bg-[#243047] py-16 sm:py-20 md:py-24"
+      className="relative overflow-hidden bg-[#243047] pb-[max(3.75rem,calc(env(safe-area-inset-bottom,0px)+2.75rem))] pt-14 sm:py-20 md:py-24"
       id="reviews"
     >
       <div
@@ -87,7 +87,7 @@ export default function Testimonials() {
         <motion.div
           initial={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="mx-auto mt-10 flex max-w-4xl flex-wrap justify-center gap-8 sm:mt-12 sm:gap-12 md:gap-16"
+          className="mx-auto mt-10 hidden max-w-4xl flex-wrap justify-center gap-8 sm:mt-12 sm:gap-12 md:flex md:gap-16"
         >
           {indicators.map((ind) => {
             const Icon = ind.icon;
@@ -110,7 +110,7 @@ export default function Testimonials() {
           })}
         </motion.div>
 
-        <div className="relative mx-auto mt-12 max-w-6xl sm:mt-14">
+        <div className="relative mx-auto mt-8 max-w-6xl md:mt-14">
           <div className="pointer-events-none absolute -left-1 top-1/2 z-10 hidden -translate-y-1/2 md:block">
             <button
               type="button"
@@ -160,7 +160,7 @@ export default function Testimonials() {
               return (
                 <article
                   key={`${row.name}-${row.quote.slice(0, 24)}`}
-                  className="relative flex min-h-[280px] shrink-0 grow-0 snap-start flex-col rounded-2xl border border-white/10 bg-[#1a2639]/90 p-5 shadow-lg backdrop-blur-sm sm:min-h-[300px] sm:p-6 md:p-8 basis-[calc((100%-2rem)/3)] md:basis-[calc((100%-3rem)/4)]"
+                  className="relative flex min-h-[280px] shrink-0 grow-0 snap-start flex-col rounded-2xl border border-white/10 bg-[#1a2639]/90 p-5 shadow-lg backdrop-blur-sm sm:min-h-[300px] sm:p-6 md:p-8 basis-[calc((100%-1rem)/2)] md:basis-[calc((100%-3rem)/4)]"
                 >
                   <div className="absolute right-4 top-4 text-5xl font-serif leading-none text-[var(--accent)]/25 sm:text-6xl md:text-7xl">
                     &ldquo;
