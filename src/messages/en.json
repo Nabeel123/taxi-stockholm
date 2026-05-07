@@ -54,7 +54,8 @@
     "services": "Services",
     "workAt": "Work at {company}",
     "privacy": "Privacy policy",
-    "terms": "Terms of service"
+    "terms": "Terms of service",
+    "refunds": "Refund policy"
   },
   "hero": {
     "mastheadKicker": "Transparent pricing — No hidden fees",
@@ -308,6 +309,26 @@
     "s4p": "We are not liable for delays caused by circumstances beyond our control, including traffic, weather, or flight delays. We strive to provide accurate pickup estimates and will communicate any significant changes.",
     "s5h": "5. Contact",
     "s5p": "For support or questions about these terms, contact us at {phone} or via WhatsApp."
+  },
+  "refunds": {
+    "backToHome": "← Back to home",
+    "backToHomeAria": "Back to home",
+    "lastUpdated": "Last updated:",
+    "title": "Refund Policy",
+    "s1h": "1. Scope",
+    "s1p": "This Refund Policy explains how {company} handles refunds for transfers and taxi journeys when you book with us via our website, WhatsApp, or other channels we operate. Payment terms confirmed at checkout or in your booking correspondence may take precedence where they expressly differ.",
+    "s2h": "2. Cancellations you make",
+    "s2p": "Where you cancel before the driver is dispatched or on the way — and at least twenty-four (24) hours before the agreed pickup window for prepaid airport transfers — we will ordinarily refund eligible amounts in full unless a different cutoff or retention fee was shown at booking. Late cancellations inside twenty-four hours, after the vehicle has departed, or repeatedly after driver assignment may be non-refundable up to one hundred percent (100 %) of the agreed fare.",
+    "s3h": "3. Refunds initiated by us",
+    "s3p": "If we cancel due to staffing, licensing, mechanical reasons, severe weather impacting safe operation under our judgement, or if we materially fail to perform the contracted ride through our fault, you are entitled to a full refund or to reschedule — your choice.",
+    "s4h": "4. Payments made online",
+    "s4p": "Approved refunds follow the reversal rules of Stripe and card networks — typically posting within five (5)–ten (10) business days after approval. If the original funding source can no longer be credited, we will agree with you another reasonable disbursement.",
+    "s5h": "5. Charges we ordinarily do not refund",
+    "s5p": "We normally do not refund: no‑shows once the driver is present at or near the agreed pickup according to our records; ancillary cleaning or waiting fees authorised at booking; fares for a segment already completed in full; goodwill discounts already deducted; fraudulent or abusive claims or attempts to bypass our booking terms; or rides cancelled solely at our cost after service has actually begun.",
+    "s6h": "6. How to submit a refund request",
+    "s6p": "Send your booking reference, passenger name, and approximate payment date within fourteen (14) days of noticing the issue, unless the law gives you longer. Prefer {email}; you can also reach us at {phone} or on WhatsApp. We aim to respond with a substantive answer within fourteen (14) calendar days.",
+    "s7h": "7. Changes",
+    "s7p": "{company} may amend this Policy. Material changes affecting existing confirmed bookings honour the wording valid at acceptance unless law requires stronger protection."
   },
   "booking": {
     "stepDetails": "Details",

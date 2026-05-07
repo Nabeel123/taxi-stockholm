@@ -98,6 +98,14 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link
+                  href="/refund-policy"
+                  className="text-sm text-white/80 transition-colors hover:text-white"
+                >
+                  {t("refunds")}
+                </Link>
+              </li>
+              <li>
                 <a
                   href={COMPANY.workMailto}
                   className="text-sm text-white/80 transition-colors hover:text-white"

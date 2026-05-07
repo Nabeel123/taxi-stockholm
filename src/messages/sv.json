@@ -54,7 +54,8 @@
     "services": "Tjänster",
     "workAt": "Arbeta på {company}",
     "privacy": "Integritetspolicy",
-    "terms": "Användarvillkor"
+    "terms": "Användarvillkor",
+    "refunds": "Återbetalningspolicy"
   },
   "hero": {
     "mastheadKicker": "Transparent prissättning — inga dolda avgifter",
@@ -308,6 +309,26 @@
     "s4p": "Vi ansvarar inte för förseningar orsakade av omständigheter utanför vår kontroll, till exempel trafik, väder eller flygförseningar. Vi strävar efter att ge korrekta uppskattningar och meddelar betydande ändringar.",
     "s5h": "5. Kontakt",
     "s5p": "Support eller frågor om villkoren: ring {phone} eller kontakta oss via WhatsApp."
+  },
+  "refunds": {
+    "backToHome": "← Tillbaka till startsidan",
+    "backToHomeAria": "Tillbaka till startsidan",
+    "lastUpdated": "Senast uppdaterad:",
+    "title": "Återbetalningspolicy",
+    "s1h": "1. Omfattning",
+    "s1p": "Denna återbetalningspolicy beskriver hur {company} hanterar återbetalningar för transfer- och taxiresor när du bokar via vår webbplats, WhatsApp eller andra kanaler vi driver. Betalningsvillkor som bekräftats i kassan eller i bokningsunderlag kan ha företräde om de uttryckligen avviker.",
+    "s2h": "2. Avbokning som du gör",
+    "s2p": "Om du avbokar innan förare skickats eller är på väg — och minst tjugofyra (24) timmar före avtalad upphämtning för förbetalda flygplatstransfer — återbetalar vi i regel hela beloppet om inget annat angavs vid bokning. Sen avbokning inom tjugofyra timmar, efter att fordonet avrest, eller upprepade avbokningar efter att förare tilldelats kan vara helt icke återbetalningsbara upp till hundra procent (100 %) av överenskommet pris.",
+    "s3h": "3. Återbetalning från vår sida",
+    "s3p": "Om vi avbokar på grund av bemanning, tillstånd, fordon, väder som enligt vår bedömning påverkar säker körning, eller om vi på avgjort avtalsbrott inte genomför den bokade resan, har du rätt till full återbetalning eller ombokning — du väljer.",
+    "s4h": "4. Betalningar online",
+    "s4p": "Godkända återbetalningar följer Stripe och kortnätverkens regler och syns vanligtvis inom fem (5)–tio (10) bankdagar efter godkännande. Om det ursprungliga kontot inte kan tillgodokrediteras löser vi tillsammans ett annat skäligt utbetalningssätt.",
+    "s5h": "5. Vad som normalt inte återbetalas",
+    "s5p": "No‑show när förare enligt GPS och våra uppgifter finns på eller nära avtalad upphämtning, extra städ- eller väntetidsavgifter som godkänts vid bokning vid skada eller orimlig väntan, redan utnyttjade sträckor, bedrägliga eller dubbla anspråk, försök att kringgå bokningsvillkor, avbokning utan vårt skuld när tjänsten redan påbörjats i praktiken.",
+    "s6h": "6. Så ansöker du om återbetalning",
+    "s6p": "Ange bokningsreferens, resenärsnamn och ungefärligt betalningsdatum inom fjorton (14) dagar från att du upptäckte felet, om inte lag ger längre tid. Föredra {email}; du når oss också på {phone} eller WhatsApp. Vi strävar efter ett innehållsrikt svar inom fjorton (14) kalenderdagar.",
+    "s7h": "7. Ändringar",
+    "s7p": "{company} kan uppdatera denna policy. Väsentliga ändringar för redan bekräftade bokningar följer den version som gällde vid accept om inte lag kräver starkare skydd."
   },
   "booking": {
     "stepDetails": "Uppgifter",
