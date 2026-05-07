@@ -23,13 +23,22 @@ type PaymentFormProps = {
   onPaid: () => void;
   onReady: () => void;
   onBusyChange?: (busy: boolean) => void;
+  onBeforeConfirmPayment?: () => void;
 };
 
-function PaymentForm({ formId, returnUrl, onPaid, onReady, onBusyChange }: PaymentFormProps) {
+function PaymentForm({
+  formId,
+  returnUrl,
+  onPaid,
+  onReady,
+  onBusyChange,
+  onBeforeConfirmPayment,
+}: PaymentFormProps) {
   const stripe = useStripe();
   const elements = useElements();
   const onPaidRef = useRef(onPaid);
   const onBusyChangeRef = useRef(onBusyChange);
+  const onBeforeConfirmPaymentRef = useRef(onBeforeConfirmPayment);
   const inFlightRef = useRef(false);
 
   useEffect(() => {
@@ -40,9 +49,14 @@ function PaymentForm({ formId, returnUrl, onPaid, onReady, onBusyChange }: Payme
     onBusyChangeRef.current = onBusyChange;
   }, [onBusyChange]);
 
+  useEffect(() => {
+    onBeforeConfirmPaymentRef.current = onBeforeConfirmPayment;
+  }, [onBeforeConfirmPayment]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!stripe || !elements || inFlightRef.current) return;
+    onBeforeConfirmPaymentRef.current?.();
     inFlightRef.current = true;
     onBusyChangeRef.current?.(true);
     const { error } = await stripe.confirmPayment({
@@ -86,6 +100,8 @@ export type StripePaymentSectionProps = {
   onConfigurationError?: () => void;
   onReadyChange?: (ready: boolean) => void;
   onBusyChange?: (busy: boolean) => void;
+  /** Called synchronously before `confirmPayment` (e.g. persist form draft before Stripe redirect). */
+  onBeforeConfirmPayment?: () => void;
 };
 
 export function StripePaymentSection({
@@ -96,6 +112,7 @@ export function StripePaymentSection({
   onConfigurationError,
   onReadyChange,
   onBusyChange,
+  onBeforeConfirmPayment,
 }: StripePaymentSectionProps) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [dismissed, setDismissed] = useState(false);
@@ -179,6 +196,7 @@ export function StripePaymentSection({
           onPaid={() => onPaidRef.current()}
           onReady={() => onReadyChange?.(true)}
           onBusyChange={onBusyChange}
+          onBeforeConfirmPayment={onBeforeConfirmPayment}
         />
       </Elements>
     </>

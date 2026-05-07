@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, useId, Suspense, useMemo } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback, useRef, useId, Suspense, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import DatePicker from "react-datepicker";
@@ -50,6 +50,43 @@ const REDIRECT_HOME_MS = 10000;
 const BOOKING_STEP_PAYMENT = 1;
 const BOOKING_STEP_CONFIRM = 2;
 
+/** Survives Stripe redirect full-page return so step 3 can show trip details */
+const BOOKING_CONFIRMATION_DRAFT_KEY = "sahotra.booking.confirmationDraft.v1";
+
+function persistBookingConfirmationDraft(values: BookingFormData): void {
+  if (typeof window === "undefined") return;
+  try {
+    const payload = {
+      ...values,
+      pickupDate:
+        values.pickupDate instanceof Date
+          ? values.pickupDate.toISOString()
+          : values.pickupDate,
+    };
+    sessionStorage.setItem(BOOKING_CONFIRMATION_DRAFT_KEY, JSON.stringify(payload));
+  } catch {
+    /* ignore */
+  }
+}
+
+function readBookingConfirmationDraft(): Partial<BookingFormData> | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(BOOKING_CONFIRMATION_DRAFT_KEY);
+    if (!raw) return null;
+    const o = JSON.parse(raw) as Record<string, unknown>;
+    if (typeof o.pickupDate === "string") {
+      const d = new Date(o.pickupDate);
+      if (!Number.isNaN(d.getTime())) {
+        o.pickupDate = d;
+      }
+    }
+    return o as Partial<BookingFormData>;
+  } catch {
+    return null;
+  }
+}
+
 interface BookingFormProps {
   defaultService?: string;
   defaultPickup?: string;
@@ -83,6 +120,19 @@ function formatDateLong(d: Date | string, localeTag: string): string {
       year: "numeric",
     }) ?? "—"
   );
+}
+
+/** Normalizes Date / ISO string / timestamp from RHF or sessionStorage revival */
+function formatBookingDateForDisplay(value: unknown, localeTag: string): string {
+  if (value == null || value === "") return "—";
+  const d =
+    value instanceof Date
+      ? value
+      : typeof value === "string" || typeof value === "number"
+        ? new Date(value)
+        : null;
+  if (!d || Number.isNaN(d.getTime())) return "—";
+  return formatDateLong(d, localeTag);
 }
 
 /** Matches bookingSchema rules for step-1 trip fields (locations, date, time, passengers, distance). */
@@ -308,6 +358,17 @@ function BookingFormInner({
     onSuccess?.(data);
   }, [getValues, distanceState.distanceKm, onSuccess]);
 
+  const persistConfirmationDraft = useCallback(() => {
+    persistBookingConfirmationDraft(getValues());
+  }, [getValues]);
+
+  useLayoutEffect(() => {
+    if (!stripeHostedRedirect || stripeRedirectStatus !== "succeeded") return;
+    const draft = readBookingConfirmationDraft();
+    if (!draft || Object.keys(draft).length === 0) return;
+    reset({ ...getValues(), ...draft });
+  }, [stripeHostedRedirect, stripeRedirectStatus, reset, getValues]);
+
   useEffect(() => {
     if (
       !stripeHostedRedirect ||
@@ -357,6 +418,7 @@ function BookingFormInner({
           packageDisplayName={packageDisplayName ?? ""}
           service={service}
           onInvalid={onInvalid}
+          persistConfirmationDraft={persistConfirmationDraft}
         />
         <Step2Payment
           register={register}
@@ -368,6 +430,7 @@ function BookingFormInner({
           localeTag={localeTag}
           onComplete={handlePaymentComplete}
           onCustomRouteComplete={handlePaymentComplete}
+          persistConfirmationDraft={persistConfirmationDraft}
         />
         <Step3Confirmation
           getValues={getValues}
@@ -403,6 +466,7 @@ type Step1Props = {
   packageDisplayName: string;
   service: { id?: string; name?: string; displayName?: string } | undefined;
   onInvalid: () => void;
+  persistConfirmationDraft: () => void;
 };
 
 function Step1Details({
@@ -420,6 +484,7 @@ function Step1Details({
   packageDisplayName,
   service,
   onInvalid,
+  persistConfirmationDraft,
 }: Step1Props) {
   const t = useTranslations("booking");
   const tSvc = useTranslations("services");
@@ -485,6 +550,7 @@ function Step1Details({
       distanceState.withinLimit;
     setIsValidating(false);
     if (valid && distanceOk) {
+      persistConfirmationDraft();
       nextStep();
     } else {
       onInvalid();
@@ -779,6 +845,7 @@ function Step2Payment({
   localeTag,
   onComplete,
   onCustomRouteComplete,
+  persistConfirmationDraft,
 }: {
   register: ReturnType<typeof useForm<BookingFormData>>["register"];
   errors: ReturnType<typeof useForm<BookingFormData>>["formState"]["errors"];
@@ -789,6 +856,7 @@ function Step2Payment({
   localeTag: string;
   onComplete: () => void;
   onCustomRouteComplete: () => void;
+  persistConfirmationDraft: () => void;
 }) {
   const t = useTranslations("booking");
   const tSite = useTranslations("site");
@@ -807,9 +875,10 @@ function Step2Payment({
   const walletDone = useCallback(() => {
     if (paymentCompletedRef.current) return;
     paymentCompletedRef.current = true;
+    persistConfirmationDraft();
     onComplete();
     nextStep();
-  }, [onComplete, nextStep]);
+  }, [onComplete, nextStep, persistConfirmationDraft]);
 
   const onStripeConfigError = useCallback(() => {
     setStripePaymentFailed(true);
@@ -827,29 +896,32 @@ function Step2Payment({
   const handlePay = useCallback(async () => {
     const ok = await trigger([...BOOKING_STEP2_CONTACT_FIELDS]);
     if (!ok) return;
+    persistConfirmationDraft();
     setPaying(true);
     setTimeout(() => {
       onComplete();
       nextStep();
       setPaying(false);
     }, 800);
-  }, [trigger, onComplete, nextStep]);
+  }, [trigger, onComplete, nextStep, persistConfirmationDraft]);
 
   const handleStripePayClick = useCallback(async () => {
     const ok = await trigger([...BOOKING_STEP2_CONTACT_FIELDS]);
     if (!ok) return;
+    persistConfirmationDraft();
     const form = document.getElementById(stripePayFormId);
     if (form instanceof HTMLFormElement) form.requestSubmit();
-  }, [trigger, stripePayFormId]);
+  }, [trigger, stripePayFormId, persistConfirmationDraft]);
 
   const handleCustomQuote = useCallback(async () => {
     setQuoteSubmitting(true);
     const ok = await trigger([...BOOKING_STEP2_CONTACT_FIELDS]);
     setQuoteSubmitting(false);
     if (!ok) return;
+    persistConfirmationDraft();
     onCustomRouteComplete();
     nextStep();
-  }, [trigger, onCustomRouteComplete, nextStep]);
+  }, [trigger, onCustomRouteComplete, nextStep, persistConfirmationDraft]);
 
   return (
     <div className="mt-6 space-y-6">
@@ -897,7 +969,7 @@ function Step2Payment({
                 {t("scheduleChip")}
               </p>
               <p className="mt-2 text-sm text-white">
-                {data.pickupDate ? formatDateShort(data.pickupDate as Date, localeTag) : "—"}
+                {formatBookingDateForDisplay(data.pickupDate, localeTag)}
               </p>
               <p className="mt-0.5 text-sm font-medium text-[var(--accent)]">{data.pickupTime || "—"}</p>
             </div>
@@ -1005,6 +1077,7 @@ function Step2Payment({
                 onConfigurationError={onStripeConfigError}
                 onReadyChange={setStripeReady}
                 onBusyChange={setStripeBusy}
+                onBeforeConfirmPayment={persistConfirmationDraft}
               />
               <p className="flex items-center gap-2 text-xs text-white/50">
                 <Lock className="h-3.5 w-3.5" />
@@ -1155,6 +1228,8 @@ function Step3Confirmation({
   const tSite = useTranslations("site");
   const router = useRouter();
   const data = getValues();
+  const draftFallback =
+    typeof window !== "undefined" ? readBookingConfirmationDraft() : null;
   const confettiFiredRef = useRef(false);
   const [secondsLeft, setSecondsLeft] = useState(Math.ceil(REDIRECT_HOME_MS / 1000));
 
@@ -1208,17 +1283,17 @@ function Step3Confirmation({
           <div className="mt-3 space-y-1 text-sm text-white/80">
             <p>
               {t("routeSummary", {
-                pickup: data.pickupLocation || "—",
-                dropoff: data.dropoffLocation || "—",
+                pickup: data.pickupLocation || draftFallback?.pickupLocation || "—",
+                dropoff: data.dropoffLocation || draftFallback?.dropoffLocation || "—",
               })}
             </p>
             <p>
               {t("dateSummary", {
-                date: data.pickupDate ? formatDateLong(data.pickupDate as Date, localeTag) : "—",
+                date: formatBookingDateForDisplay(data.pickupDate ?? draftFallback?.pickupDate, localeTag),
               })}
             </p>
-            <p>{t("timeSummary", { time: data.pickupTime || "—" })}</p>
-            <p>{t("passengersSummary", { passengers: data.passengers || "—" })}</p>
+            <p>{t("timeSummary", { time: data.pickupTime || draftFallback?.pickupTime || "—" })}</p>
+            <p>{t("passengersSummary", { passengers: data.passengers || draftFallback?.passengers || "—" })}</p>
           </div>
           {!isCustomRoute && (
             <p className="mt-3 text-lg font-bold text-[var(--accent)]">
