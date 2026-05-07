@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { Phone, MapPin } from "lucide-react";
-import { COMPANY } from "@/lib/site";
+import { COMPANY, formatSwedishOrgNumber, googleReviewsInviteUrl } from "@/lib/site";
 
 export default function Footer() {
   const t = useTranslations("footer");
@@ -107,6 +107,16 @@ export default function Footer() {
               </li>
               <li>
                 <a
+                  href={googleReviewsInviteUrl()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-white/80 transition-colors hover:text-white"
+                >
+                  {t("googleReviews")}
+                </a>
+              </li>
+              <li>
+                <a
                   href={COMPANY.workMailto}
                   className="text-sm text-white/80 transition-colors hover:text-white"
                 >
@@ -169,6 +179,18 @@ export default function Footer() {
                   >
                     <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" aria-hidden />
                     <span>{COMPANY.address.line}</span>
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href={COMPANY.allabolagUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white/80 underline-offset-2 hover:text-white hover:underline"
+                  >
+                    {t("orgNumber", {
+                      number: formatSwedishOrgNumber(COMPANY.organizationNumber),
+                    })}
                   </a>
                 </li>
               </ul>

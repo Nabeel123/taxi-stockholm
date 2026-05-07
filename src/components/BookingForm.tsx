@@ -31,6 +31,7 @@ import { SERVICES } from "@/lib/constants";
 import { serviceIdToMessageKey } from "@/lib/service-messages";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { StripePaymentSection, isStripePaymentsConfigured } from "@/components/StripePaymentSection";
+import { googleReviewsInviteUrl } from "@/lib/site";
 
 const serviceOptionIcons: Record<string, LucideIcon> = {
   "plane-arrival": Plane,
@@ -1300,6 +1301,18 @@ function Step3Confirmation({
               {t("totalSummary", { price: packagePrice })}
             </p>
           )}
+        </div>
+
+        <div className="mt-6 rounded-lg border border-neutral-700 bg-neutral-900/40 p-4 text-center">
+          <p className="text-sm text-white/75">{t("googleReviewAfterBooking")}</p>
+          <a
+            href={googleReviewsInviteUrl()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-flex min-h-11 touch-manipulation items-center justify-center gap-2 text-sm font-semibold text-[var(--accent)] underline-offset-4 transition-colors hover:text-[var(--accent-hover)] hover:underline"
+          >
+            {t("googleReviewAfterBookingCta")}
+          </a>
         </div>
 
         <div

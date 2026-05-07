@@ -1,5 +1,15 @@
 /** Company & marketing — set NEXT_PUBLIC_FACEBOOK_URL / NEXT_PUBLIC_INSTAGRAM_URL in `.env.local` for your pages. */
 
+/** Google Business “Get more reviews” link — set `NEXT_PUBLIC_GOOGLE_REVIEWS_URL` in `.env.local` for direct “Write a review”. */
+export function googleReviewsInviteUrl(): string {
+  const fromEnv = process.env.NEXT_PUBLIC_GOOGLE_REVIEWS_URL?.trim();
+  if (fromEnv) return fromEnv;
+  return (
+    "https://www.google.com/maps/search/?api=1&query=" +
+    encodeURIComponent("Sahotra Services AB, Sigtuna, Sweden")
+  );
+}
+
 export const SITE_VEHICLE_TAGLINE =
   "Premium, environment‑friendly vehicles — comfortable rides with lower environmental impact.";
 
@@ -11,8 +21,19 @@ const facebookUrl =
 const instagramUrl =
   process.env.NEXT_PUBLIC_INSTAGRAM_URL ?? "https://www.instagram.com";
 
+/** Swedish org.nr (10 digits) — display as XXXXXX-XXXX */
+export function formatSwedishOrgNumber(digits: string): string {
+  const d = digits.replace(/\D/g, "");
+  if (d.length !== 10) return digits;
+  return `${d.slice(0, 6)}-${d.slice(6)}`;
+}
+
 export const COMPANY = {
   legalName: "Sahotra Services AB",
+  /** Registered company number (Allabolag / Bolagsverket) */
+  organizationNumber: "5593565376",
+  allabolagUrl:
+    "https://www.allabolag.se/foretag/sahotra-services-ab/sigtuna/passagerartransporter/2KI9IO0I63IJZ",
   brandTitle:
     "Taxi to or from Stockholm to Arlanda and Skavsta Airport",
   description:
