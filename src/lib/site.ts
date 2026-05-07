@@ -27,9 +27,9 @@ export const COMPANY = {
       "https://www.google.com/maps/search/?api=1&query=" +
       encodeURIComponent("Ormbergsvägen 7, 193 36 Sigtuna, Sweden"),
   },
-  whatsappDigits: "46700123456",
-  phoneE164: "+46700123456",
-  phoneDisplay: "+46 700 123 456",
+  whatsappDigits: "46729450613",
+  phoneE164: "+46729450613",
+  phoneDisplay: "+46 72 945 06 13",
   facebookUrl,
   instagramUrl,
   workMailto:
