@@ -35,6 +35,7 @@
     "about": "About",
     "services": "Services",
     "reviews": "Reviews",
+    "contact": "Contact us",
     "bookNow": "Book Now",
     "toggleMenu": "Toggle menu",
     "mobileNavAria": "Main navigation",
@@ -43,7 +44,7 @@
   "footer": {
     "rights": "All rights reserved.",
     "quickLinks": "Quick links",
-    "contact": "Contact",
+    "contact": "Contact us",
     "followUs": "Follow us",
     "facebook": "Facebook",
     "instagram": "Instagram",
@@ -415,5 +416,31 @@
     "redirectSecondsShort": "s",
     "backToHomeAria": "Back to home",
     "bookAnotherAria": "Book another ride"
+  },
+  "contactPage": {
+    "metaTitle": "Contact us — Book Arlanda Taxi",
+    "metaDescription": "Send a message about bookings, quotes, or general questions. We reply as soon as we can.",
+    "title": "Contact us",
+    "subtitle": "Fill in the form and we’ll get back to you shortly.",
+    "labelName": "Name",
+    "labelEmail": "Email",
+    "labelPhone": "Phone (optional)",
+    "labelMessage": "Message",
+    "submit": "Send message",
+    "submitting": "Sending…",
+    "successTitle": "Message sent",
+    "successBody": "Thank you — we’ve received your message.",
+    "sendAnother": "Send another message",
+    "errorBanner": "Something went wrong. Please try again or email us:",
+    "privacyNote": "We only use your details to respond to your enquiry.",
+    "errors": {
+      "name_min": "Enter at least 2 characters.",
+      "name_max": "Name is too long.",
+      "email_invalid": "Enter a valid email address.",
+      "email_max": "Email is too long.",
+      "phone_max": "Phone number is too long.",
+      "message_min": "Enter at least 10 characters.",
+      "message_max": "Message is too long."
+    }
   }
 }

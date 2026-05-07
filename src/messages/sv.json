@@ -35,6 +35,7 @@
     "about": "Om oss",
     "services": "Tjänster",
     "reviews": "Recensioner",
+    "contact": "Kontakta oss",
     "bookNow": "Boka nu",
     "toggleMenu": "Öppna meny",
     "mobileNavAria": "Huvudmeny",
@@ -43,7 +44,7 @@
   "footer": {
     "rights": "Alla rättigheter förbehållna.",
     "quickLinks": "Snabblänkar",
-    "contact": "Kontakt",
+    "contact": "Kontakta oss",
     "followUs": "Följ oss",
     "facebook": "Facebook",
     "instagram": "Instagram",
@@ -415,5 +416,31 @@
     "redirectSecondsShort": "sek",
     "backToHomeAria": "Till startsidan",
     "bookAnotherAria": "Boka en ny resa"
+  },
+  "contactPage": {
+    "metaTitle": "Kontakta oss — Book Arlanda Taxi",
+    "metaDescription": "Skicka ett meddelande om bokningar, offerter eller frågor. Vi återkommer så snart vi kan.",
+    "title": "Kontakta oss",
+    "subtitle": "Fyll i formuläret så hör vi av oss inom kort.",
+    "labelName": "Namn",
+    "labelEmail": "E-post",
+    "labelPhone": "Telefon (valfritt)",
+    "labelMessage": "Meddelande",
+    "submit": "Skicka meddelande",
+    "submitting": "Skickar…",
+    "successTitle": "Meddelandet har skickats",
+    "successBody": "Tack — vi har tagit emot ditt meddelande.",
+    "sendAnother": "Skicka ett nytt meddelande",
+    "errorBanner": "Något gick fel. Försök igen eller mejla oss:",
+    "privacyNote": "Vi använder bara dina uppgifter för att svara på din förfrågan.",
+    "errors": {
+      "name_min": "Ange minst 2 tecken.",
+      "name_max": "Namnet är för långt.",
+      "email_invalid": "Ange en giltig e-postadress.",
+      "email_max": "E-postadressen är för lång.",
+      "phone_max": "Telefonnumret är för långt.",
+      "message_min": "Ange minst 10 tecken.",
+      "message_max": "Meddelandet är för långt."
+    }
   }
 }

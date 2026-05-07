@@ -1,0 +1,157 @@
+"use client";
+
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
+import { contactSubmissionSchema, type ContactSubmission } from "@/lib/contact-schema";
+import { COMPANY } from "@/lib/site";
+import { Loader2 } from "lucide-react";
+import type { z } from "zod";
+
+type ContactFormInput = z.input<typeof contactSubmissionSchema>;
+
+export default function ContactForm() {
+  const t = useTranslations("contactPage");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<ContactFormInput, unknown, ContactSubmission>({
+    resolver: zodResolver(contactSubmissionSchema),
+    defaultValues: { name: "", email: "", phone: "", message: "" },
+  });
+
+  const onSubmit = async (values: ContactSubmission) => {
+    setStatus("loading");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+      if (!res.ok) {
+        setStatus("error");
+        return;
+      }
+      setStatus("success");
+      reset();
+    } catch {
+      setStatus("error");
+    }
+  };
+
+  if (status === "success") {
+    return (
+      <div className="rounded-xl border border-[var(--accent)]/35 bg-neutral-950/70 px-5 py-6 text-center">
+        <p className="font-semibold text-white">{t("successTitle")}</p>
+        <p className="mt-2 text-sm text-white/70">{t("successBody")}</p>
+        <button
+          type="button"
+          onClick={() => setStatus("idle")}
+          className="mt-6 min-h-11 rounded-lg bg-[var(--accent)] px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-black hover:bg-[var(--accent-hover)]"
+        >
+          {t("sendAnother")}
+        </button>
+      </div>
+    );
+  }
+
+  const inputClass =
+    "w-full rounded-lg border border-neutral-600 bg-[var(--dark-slate)]/50 px-3.5 py-3 text-[15px] text-white outline-none placeholder:text-white/35 focus:border-neutral-400 focus:ring-2 focus:ring-[var(--accent)]/30";
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+      {status === "error" ? (
+        <div
+          className="rounded-lg border border-red-500/40 bg-red-950/40 px-4 py-3 text-sm text-red-100"
+          role="alert"
+        >
+          <p>{t("errorBanner")}</p>
+          <a
+            href={`mailto:${COMPANY.emails.bookings}`}
+            className="mt-2 inline-block font-medium text-[var(--accent)] underline-offset-2 hover:underline"
+          >
+            {COMPANY.emails.bookings}
+          </a>
+        </div>
+      ) : null}
+
+      <div>
+        <label htmlFor="contact-name" className="block text-sm font-medium text-white/85">
+          {t("labelName")}
+        </label>
+        <input id="contact-name" type="text" autoComplete="name" className={`mt-1.5 ${inputClass}`} {...register("name")} />
+        {errors.name?.message ? (
+          <p className="mt-1.5 text-sm text-red-300">{t(`errors.${errors.name.message}`)}</p>
+        ) : null}
+      </div>
+
+      <div>
+        <label htmlFor="contact-email" className="block text-sm font-medium text-white/85">
+          {t("labelEmail")}
+        </label>
+        <input
+          id="contact-email"
+          type="email"
+          autoComplete="email"
+          inputMode="email"
+          className={`mt-1.5 ${inputClass}`}
+          {...register("email")}
+        />
+        {errors.email?.message ? (
+          <p className="mt-1.5 text-sm text-red-300">{t(`errors.${errors.email.message}`)}</p>
+        ) : null}
+      </div>
+
+      <div>
+        <label htmlFor="contact-phone" className="block text-sm font-medium text-white/85">
+          {t("labelPhone")}
+        </label>
+        <input
+          id="contact-phone"
+          type="tel"
+          autoComplete="tel"
+          className={`mt-1.5 ${inputClass}`}
+          {...register("phone")}
+        />
+        {errors.phone?.message ? (
+          <p className="mt-1.5 text-sm text-red-300">{t(`errors.${errors.phone.message}`)}</p>
+        ) : null}
+      </div>
+
+      <div>
+        <label htmlFor="contact-message" className="block text-sm font-medium text-white/85">
+          {t("labelMessage")}
+        </label>
+        <textarea
+          id="contact-message"
+          rows={5}
+          className={`mt-1.5 resize-y min-h-[8rem] ${inputClass}`}
+          {...register("message")}
+        />
+        {errors.message?.message ? (
+          <p className="mt-1.5 text-sm text-red-300">{t(`errors.${errors.message.message}`)}</p>
+        ) : null}
+      </div>
+
+      <button
+        type="submit"
+        disabled={status === "loading"}
+        className="flex min-h-11 w-full touch-manipulation items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-5 py-3 text-sm font-bold uppercase tracking-wide text-black hover:bg-[var(--accent-hover)] disabled:opacity-60"
+      >
+        {status === "loading" ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin shrink-0" aria-hidden />
+            {t("submitting")}
+          </>
+        ) : (
+          t("submit")
+        )}
+      </button>
+    </form>
+  );
+}

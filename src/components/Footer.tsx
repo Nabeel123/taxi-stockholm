@@ -16,7 +16,7 @@ export default function Footer() {
     { href: "/#about", label: t("about") },
     { href: "/#services", label: t("services") },
     { href: "/#reviews", label: t("reviews") },
-    { href: "/#contact", label: t("contact") },
+    { href: "/contact", label: t("contact") },
   ] as const;
 
   const handleHashLink = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {

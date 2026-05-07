@@ -18,14 +18,17 @@ function navLinkHash(href: string): "" | `#${string}` {
 }
 
 function isNavLinkActive(pathname: string, locationHash: string, href: string): boolean {
-  const onHome = pathname === "/";
-  if (!onHome) return false;
-  const anchor = navLinkHash(href);
-  if (href === "/" || anchor === "") {
+  if (href === "/") {
+    if (pathname !== "/") return false;
     const h = locationHash || "";
     return h === "" || h === "#";
   }
-  return locationHash === anchor;
+  if (!href.includes("#")) {
+    return pathname === href;
+  }
+  if (pathname !== "/") return false;
+  const anchor = navLinkHash(href);
+  return anchor !== "" && locationHash === anchor;
 }
 
 /** Active link: navy text + underline (readable on white; avoids low-contrast yellow-on-white). */
@@ -70,12 +73,16 @@ export default function Header() {
     { href: "/#about", label: t("about") },
     { href: "/#services", label: t("services") },
     { href: "/#reviews", label: t("reviews") },
+    { href: "/contact", label: t("contact") },
   ] as const;
 
   const handleNavClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-      if (pathname !== "/") return;
       if (href === "/") {
+        if (pathname !== "/") {
+          setMobileMenuOpen(false);
+          return;
+        }
         e.preventDefault();
         document.getElementById("hero")?.scrollIntoView({ behavior: "smooth", block: "start" });
         window.history.replaceState(null, "", pathname);
@@ -83,6 +90,11 @@ export default function Header() {
         setMobileMenuOpen(false);
         return;
       }
+      if (!href.includes("#")) {
+        setMobileMenuOpen(false);
+        return;
+      }
+      if (pathname !== "/") return;
       const id = href.split("#")[1];
       if (id) {
         e.preventDefault();
