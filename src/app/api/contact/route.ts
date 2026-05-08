@@ -1,5 +1,23 @@
 import { NextResponse } from "next/server";
-import { contactSubmissionSchema } from "@/lib/contact-schema";
+import { contactApiBodySchema } from "@/lib/contact-schema";
+
+async function verifyRecaptchaToken(token: string, secretKey: string): Promise<boolean> {
+  const params = new URLSearchParams();
+  params.set("secret", secretKey);
+  params.set("response", token);
+
+  try {
+    const res = await fetch("https://www.google.com/recaptcha/api/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: params.toString(),
+    });
+    const data = (await res.json()) as { success?: boolean };
+    return data.success === true;
+  } catch {
+    return false;
+  }
+}
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -9,12 +27,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "invalid_json" }, { status: 400 });
   }
 
-  const parsed = contactSubmissionSchema.safeParse(body);
+  const parsed = contactApiBodySchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: "validation_error" }, { status: 400 });
   }
 
-  const data = parsed.data;
+  const captchaSecret = process.env.GOOGLE_CAPTCHA_SECRET_KEY?.trim();
+  if (captchaSecret) {
+    const token = parsed.data.recaptchaToken?.trim() ?? "";
+    if (!token) {
+      return NextResponse.json({ error: "captcha_required" }, { status: 400 });
+    }
+    const ok = await verifyRecaptchaToken(token, captchaSecret);
+    if (!ok) {
+      return NextResponse.json({ error: "captcha_invalid" }, { status: 400 });
+    }
+  }
+
+  const { recaptchaToken: _token, ...data } = parsed.data;
+
   const webhook = process.env.CONTACT_FORM_WEBHOOK_URL?.trim();
 
   if (webhook) {

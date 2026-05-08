@@ -16,3 +16,10 @@ export const contactSubmissionSchema = z.object({
 });
 
 export type ContactSubmission = z.infer<typeof contactSubmissionSchema>;
+
+/** API payload includes optional token from Google reCAPTCHA v2 */
+export const contactApiBodySchema = contactSubmissionSchema.extend({
+  recaptchaToken: z.string().optional(),
+});
+
+export type ContactApiBody = z.infer<typeof contactApiBodySchema>;
