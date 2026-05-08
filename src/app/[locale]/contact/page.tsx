@@ -14,5 +14,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default function ContactPage() {
-  return <ContactPageClient />;
+  const recaptchaSiteKey = process.env.GOOGLE_CAPTCHA_SITE_KEY?.trim() || null;
+  return <ContactPageClient recaptchaSiteKey={recaptchaSiteKey} />;
 }

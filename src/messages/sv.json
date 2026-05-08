@@ -434,6 +434,9 @@
     "sendAnother": "Skicka ett nytt meddelande",
     "errorBanner": "Något gick fel. Försök igen eller mejla oss:",
     "privacyNote": "Vi använder bara dina uppgifter för att svara på din förfrågan.",
+    "captchaRequired": "Bocka i ”Jag är inte en robot” innan du skickar.",
+    "captchaNotReady": "Verifieringen laddas fortfarande. Vänta ett ögonblick och försök igen.",
+    "captchaVerifyFailed": "Verifieringen misslyckades. Genomför kontrollen igen och försök på nytt.",
     "errors": {
       "name_min": "Ange minst 2 tecken.",
       "name_max": "Namnet är för långt.",

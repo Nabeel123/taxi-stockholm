@@ -37,7 +37,7 @@ export default function ContactForm({ recaptchaSiteKey }: Props) {
         theme: "dark",
       });
     });
-  }, [recaptchaSiteKey, recaptchaReady]);
+  }, [recaptchaSiteKey, recaptchaReady, status]);
 
   useEffect(() => {
     return () => {
@@ -118,8 +118,20 @@ export default function ContactForm({ recaptchaSiteKey }: Props) {
     }
   };
 
-  if (status === "success") {
-    return (
+  const inputClass =
+    "w-full rounded-lg border border-neutral-600 bg-[var(--dark-slate)]/50 px-3.5 py-3 text-[15px] text-white outline-none placeholder:text-white/35 focus:border-neutral-400 focus:ring-2 focus:ring-[var(--accent)]/30";
+
+  return (
+    <>
+      {recaptchaSiteKey ? (
+        <Script
+          src="https://www.google.com/recaptcha/api.js"
+          strategy="afterInteractive"
+          onLoad={() => setRecaptchaReady(true)}
+        />
+      ) : null}
+
+      {status === "success" ? (
       <div className="rounded-xl border border-[var(--accent)]/35 bg-neutral-950/70 px-5 py-6 text-center">
         <p className="font-semibold text-white">{t("successTitle")}</p>
         <p className="mt-2 text-sm text-white/70">{t("successBody")}</p>
@@ -134,22 +146,7 @@ export default function ContactForm({ recaptchaSiteKey }: Props) {
           {t("sendAnother")}
         </button>
       </div>
-    );
-  }
-
-  const inputClass =
-    "w-full rounded-lg border border-neutral-600 bg-[var(--dark-slate)]/50 px-3.5 py-3 text-[15px] text-white outline-none placeholder:text-white/35 focus:border-neutral-400 focus:ring-2 focus:ring-[var(--accent)]/30";
-
-  return (
-    <>
-      {recaptchaSiteKey ? (
-        <Script
-          src="https://www.google.com/recaptcha/api.js"
-          strategy="afterInteractive"
-          onLoad={() => setRecaptchaReady(true)}
-        />
-      ) : null}
-
+      ) : (
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
         {status === "error" ? (
           <div
@@ -251,6 +248,7 @@ export default function ContactForm({ recaptchaSiteKey }: Props) {
           )}
         </button>
       </form>
+      )}
     </>
   );
 }

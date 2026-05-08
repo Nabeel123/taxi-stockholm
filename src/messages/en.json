@@ -434,6 +434,9 @@
     "sendAnother": "Send another message",
     "errorBanner": "Something went wrong. Please try again or email us:",
     "privacyNote": "We only use your details to respond to your enquiry.",
+    "captchaRequired": "Please tick the “I’m not a robot” box before sending.",
+    "captchaNotReady": "Verification is still loading. Please wait a moment and try again.",
+    "captchaVerifyFailed": "Verification failed. Complete the check again and retry.",
     "errors": {
       "name_min": "Enter at least 2 characters.",
       "name_max": "Name is too long.",

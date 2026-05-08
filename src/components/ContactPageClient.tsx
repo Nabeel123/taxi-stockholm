@@ -5,7 +5,11 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ContactForm from "@/components/ContactForm";
 
-export default function ContactPageClient() {
+type ContactPageClientProps = {
+  recaptchaSiteKey: string | null;
+};
+
+export default function ContactPageClient({ recaptchaSiteKey }: ContactPageClientProps) {
   const t = useTranslations("contactPage");
 
   return (
@@ -17,7 +21,7 @@ export default function ContactPageClient() {
           <p className="mt-2 text-sm text-white/65 sm:text-base">{t("subtitle")}</p>
 
           <div className="mt-8 rounded-xl border border-neutral-700 bg-neutral-900/35 p-6 sm:p-8">
-            <ContactForm />
+            <ContactForm recaptchaSiteKey={recaptchaSiteKey} />
           </div>
 
           <p className="mt-6 text-center text-xs text-white/45">{t("privacyNote")}</p>
