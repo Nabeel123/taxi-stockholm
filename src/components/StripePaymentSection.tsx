@@ -12,11 +12,6 @@ export function isStripePaymentsConfigured(): boolean {
   return Boolean(publishableKey && publishableKey.length > 0);
 }
 
-/** Deprecated alias — use isStripePaymentsConfigured */
-export function isStripeWalletConfigured(): boolean {
-  return isStripePaymentsConfigured();
-}
-
 type PaymentFormProps = {
   formId: string;
   returnUrl: string;

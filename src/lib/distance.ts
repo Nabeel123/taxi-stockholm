@@ -1,12 +1,12 @@
 const MAX_DISTANCE_KM = 47;
 
-export interface GeocodeResult {
+interface GeocodeResult {
   lat: number;
   lon: number;
   displayName: string;
 }
 
-export async function geocode(address: string): Promise<GeocodeResult | null> {
+async function geocode(address: string): Promise<GeocodeResult | null> {
   if (!address.trim()) return null;
   try {
     const res = await fetch(
@@ -26,7 +26,7 @@ export async function geocode(address: string): Promise<GeocodeResult | null> {
   }
 }
 
-export async function getDrivingDistance(
+async function getDrivingDistance(
   from: GeocodeResult,
   to: GeocodeResult
 ): Promise<{ distanceKm: number; durationMin: number } | null> {

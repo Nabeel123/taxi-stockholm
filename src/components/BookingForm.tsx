@@ -104,12 +104,6 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-function formatDateShort(d: Date | string, localeTag: string): string {
-  if (!d) return "—";
-  const date = typeof d === "string" ? new Date(d) : d;
-  return date.toLocaleDateString(localeTag, { year: "numeric", month: "2-digit", day: "2-digit" }) ?? "—";
-}
-
 function formatDateLong(d: Date | string, localeTag: string): string {
   if (!d) return "—";
   const date = typeof d === "string" ? new Date(d) : d;

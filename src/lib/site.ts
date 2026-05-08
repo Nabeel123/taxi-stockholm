@@ -10,12 +10,6 @@ export function googleReviewsInviteUrl(): string {
   );
 }
 
-export const SITE_VEHICLE_TAGLINE =
-  "Premium, environment‑friendly vehicles — comfortable rides with lower environmental impact.";
-
-/** Short line for booking UI and cards. */
-export const SITE_VEHICLE_SHORT = "Premium eco-friendly vehicle";
-
 const facebookUrl =
   process.env.NEXT_PUBLIC_FACEBOOK_URL ?? "https://www.facebook.com";
 const instagramUrl =
@@ -58,6 +52,3 @@ export const COMPANY = {
   workMailto:
     "mailto:info@bookarlandataxi.se?subject=Work%20at%20Sahotra%20Services%20AB",
 };
-
-export const VASTERVAS_ROUTE_OFFER =
-  "Västerås ↔ Arlanda / Stockholm — 1000 SEK fixed price";

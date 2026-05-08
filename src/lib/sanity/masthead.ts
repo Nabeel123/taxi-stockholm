@@ -2,9 +2,7 @@ import { unstable_cache } from "next/cache";
 import { getSanityClient } from "@/lib/sanity/client";
 import { MASTHEAD_CACHE_TAG, MASTHEAD_REVALIDATE_SECONDS } from "@/lib/sanity/constants";
 
-export { MASTHEAD_CACHE_TAG, MASTHEAD_REVALIDATE_SECONDS } from "@/lib/sanity/constants";
-
-export type MastheadBackgroundMode = "video" | "image";
+type MastheadBackgroundMode = "video" | "image";
 
 /** Fields from Sanity; booking card copy, primary CTA, and static hero image path live in `Hero`. */
 export type MastheadContent = {
@@ -42,7 +40,7 @@ type MastheadDoc = {
   posterFromAsset?: string;
 } | null;
 
-export const DEFAULT_MASTHEAD: MastheadContent = {
+const DEFAULT_MASTHEAD: MastheadContent = {
   badgeText: "Premium Taxi Agency",
   heading: "On time, wherever you’re headed.",
   subheading:

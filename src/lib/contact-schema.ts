@@ -21,5 +21,3 @@ export type ContactSubmission = z.infer<typeof contactSubmissionSchema>;
 export const contactApiBodySchema = contactSubmissionSchema.extend({
   recaptchaToken: z.string().optional(),
 });
-
-export type ContactApiBody = z.infer<typeof contactApiBodySchema>;

@@ -116,7 +116,12 @@ export async function POST(request: Request) {
     }
   }
 
-  const { recaptchaToken: _token, ...data } = parsed.data;
+  const data: ContactSubmission = {
+    name: parsed.data.name,
+    email: parsed.data.email,
+    phone: parsed.data.phone,
+    message: parsed.data.message,
+  };
 
   const resendKey = process.env.RESEND_API_KEY?.trim();
   const resendFrom = process.env.RESEND_CONTACT_FROM?.trim();
