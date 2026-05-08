@@ -26,10 +26,15 @@ import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { bookingSchema, type BookingFormData } from "@/lib/booking-schema";
 import { PASSENGER_OPTIONS, SERVICE_OPTIONS } from "@/lib/booking-schema";
-import { calculateRouteDistance, MAX_DISTANCE_KM } from "@/lib/distance";
+import {
+  calculateRouteDistance,
+  EXTRA_DISTANCE_CHARGE_SEK_PER_KM,
+  MAX_DISTANCE_KM,
+} from "@/lib/distance";
 import { SERVICES } from "@/lib/constants";
 import { serviceIdToMessageKey } from "@/lib/service-messages";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
+import PickupCurrentLocationButton from "@/components/PickupCurrentLocationButton";
 import { StripePaymentSection, isStripePaymentsConfigured } from "@/components/StripePaymentSection";
 import { googleReviewsInviteUrl } from "@/lib/site";
 
@@ -205,6 +210,7 @@ function BookingFormInner({
   onSuccess,
 }: BookingFormProps) {
   const [shake, setShake] = useState(false);
+  const distanceCalcSeqRef = useRef(0);
   const [distanceState, setDistanceState] = useState<{
     loading: boolean;
     distanceKm: number | null;
@@ -212,6 +218,7 @@ function BookingFormInner({
     withinLimit: boolean;
     error?: string;
   }>({ loading: false, distanceKm: null, durationMin: null, withinLimit: true });
+  const [agreedExtraDistanceCharge, setAgreedExtraDistanceCharge] = useState(false);
 
   const {
     register,
@@ -221,6 +228,7 @@ function BookingFormInner({
     reset,
     getValues,
     trigger,
+    clearErrors,
     formState: { errors },
   } = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
@@ -268,8 +276,15 @@ function BookingFormInner({
       reset({ ...values, serviceType: "airport-dropoff", pickupLocation: "", dropoffLocation: arlandaLine });
     } else if (defaultService === "airport-pickup") {
       reset({ ...values, serviceType: "airport-pickup", pickupLocation: arlandaLine, dropoffLocation: "" });
-    } else if (defaultService === "custom-route" && (defaultPickup || defaultDropoff)) {
-      reset({ ...values, serviceType: "custom-route", pickupLocation: defaultPickup ?? "", dropoffLocation: defaultDropoff ?? "" });
+    } else if (defaultService === "city-tour") {
+      reset({ ...values, serviceType: "city-tour", pickupLocation: "", dropoffLocation: "" });
+    } else if (defaultService === "custom-route") {
+      reset({
+        ...values,
+        serviceType: "custom-route",
+        pickupLocation: defaultPickup ?? "",
+        dropoffLocation: defaultDropoff ?? "",
+      });
     } else if (defaultService === "vasteras-route") {
       reset({
         ...values,
@@ -281,15 +296,27 @@ function BookingFormInner({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- getValues is stable, we only want to run when URL params change
   }, [defaultService, defaultPickup, defaultDropoff, arlandaLine]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    distanceCalcSeqRef.current += 1;
     if (serviceType === "airport-pickup") {
       setValue("pickupLocation", arlandaLine, { shouldValidate: false });
       setValue("dropoffLocation", "", { shouldValidate: false });
     } else if (serviceType === "airport-dropoff") {
       setValue("pickupLocation", "", { shouldValidate: false });
       setValue("dropoffLocation", arlandaLine, { shouldValidate: false });
+    } else if (serviceType === "city-tour" || serviceType === "custom-route") {
+      setValue("pickupLocation", "", { shouldValidate: false });
+      setValue("dropoffLocation", "", { shouldValidate: false });
     }
-  }, [serviceType, setValue, arlandaLine]);
+    clearErrors(["pickupLocation", "dropoffLocation"]);
+    setDistanceState({
+      loading: false,
+      distanceKm: null,
+      durationMin: null,
+      withinLimit: true,
+    });
+    setAgreedExtraDistanceCharge(false);
+  }, [serviceType, setValue, arlandaLine, clearErrors]);
 
   const isPickupLocked = serviceType === "airport-pickup";
   const isDropoffLocked = serviceType === "airport-dropoff";
@@ -297,14 +324,14 @@ function BookingFormInner({
   const debouncedPickup = useDebounce(pickupLocation ?? "", 800);
   const debouncedDropoff = useDebounce(dropoffLocation ?? "", 800);
 
-  const shouldCalculateDistance =
-    serviceType !== "city-tour" &&
-    serviceType !== "custom-route" &&
-    debouncedPickup.trim().length >= 3 &&
-    debouncedDropoff.trim().length >= 3;
+  const arlandaTrimmed = arlandaLine.trim();
 
   const runDistanceCalc = useCallback(async () => {
-    if (!shouldCalculateDistance) {
+    const vals = getValues();
+    const st = vals.serviceType;
+
+    if (st === "city-tour" || st === "custom-route") {
+      distanceCalcSeqRef.current += 1;
       setDistanceState({
         loading: false,
         distanceKm: null,
@@ -313,11 +340,49 @@ function BookingFormInner({
       });
       return;
     }
+
+    const p = (vals.pickupLocation ?? "").trim();
+    const d = (vals.dropoffLocation ?? "").trim();
+    const dbp = debouncedPickup.trim();
+    const dbd = debouncedDropoff.trim();
+
+    /** Live values must reflect layout presets — never trust a stale shouldCalculate from render before presets. */
+    if (st === "airport-pickup" && p !== arlandaTrimmed) {
+      distanceCalcSeqRef.current += 1;
+      setDistanceState({
+        loading: false,
+        distanceKm: null,
+        durationMin: null,
+        withinLimit: true,
+      });
+      return;
+    }
+    if (st === "airport-dropoff" && d !== arlandaTrimmed) {
+      distanceCalcSeqRef.current += 1;
+      setDistanceState({
+        loading: false,
+        distanceKm: null,
+        durationMin: null,
+        withinLimit: true,
+      });
+      return;
+    }
+
+    if (p !== dbp || d !== dbd || dbp.length < 3 || dbd.length < 3) {
+      distanceCalcSeqRef.current += 1;
+      setDistanceState({
+        loading: false,
+        distanceKm: null,
+        durationMin: null,
+        withinLimit: true,
+      });
+      return;
+    }
+
+    const seq = ++distanceCalcSeqRef.current;
     setDistanceState((s) => ({ ...s, loading: true, error: undefined }));
-    const result = await calculateRouteDistance(
-      debouncedPickup,
-      debouncedDropoff
-    );
+    const result = await calculateRouteDistance(dbp, dbd);
+    if (seq !== distanceCalcSeqRef.current) return;
     setDistanceState({
       loading: false,
       distanceKm: result.distanceKm ?? null,
@@ -325,11 +390,15 @@ function BookingFormInner({
       withinLimit: result.withinLimit,
       error: result.error,
     });
-  }, [shouldCalculateDistance, debouncedPickup, debouncedDropoff]);
+  }, [getValues, debouncedPickup, debouncedDropoff, arlandaTrimmed]);
 
   useEffect(() => {
     runDistanceCalc();
   }, [runDistanceCalc]);
+
+  useEffect(() => {
+    setAgreedExtraDistanceCharge(false);
+  }, [debouncedPickup, debouncedDropoff]);
 
   const service = SERVICES.find((s) => s.id === serviceType);
   const svcKey = service ? serviceIdToMessageKey(service.id) : "";
@@ -414,6 +483,8 @@ function BookingFormInner({
           service={service}
           onInvalid={onInvalid}
           persistConfirmationDraft={persistConfirmationDraft}
+          agreedExtraDistanceCharge={agreedExtraDistanceCharge}
+          setAgreedExtraDistanceCharge={setAgreedExtraDistanceCharge}
         />
         <Step2Payment
           register={register}
@@ -462,6 +533,8 @@ type Step1Props = {
   service: { id?: string; name?: string; displayName?: string } | undefined;
   onInvalid: () => void;
   persistConfirmationDraft: () => void;
+  agreedExtraDistanceCharge: boolean;
+  setAgreedExtraDistanceCharge: (value: boolean) => void;
 };
 
 function Step1Details({
@@ -480,6 +553,8 @@ function Step1Details({
   service,
   onInvalid,
   persistConfirmationDraft,
+  agreedExtraDistanceCharge,
+  setAgreedExtraDistanceCharge,
 }: Step1Props) {
   const t = useTranslations("booking");
   const tSvc = useTranslations("services");
@@ -502,11 +577,13 @@ function Step1Details({
   const pickupLoc = watch("pickupLocation");
   const dropoffLoc = watch("dropoffLocation");
 
-  const distanceBlocksNext =
+  const distanceOverLimit =
     serviceType !== "city-tour" &&
     serviceType !== "custom-route" &&
     distanceState.distanceKm !== null &&
     !distanceState.withinLimit;
+
+  const distanceBlocksNext = distanceOverLimit && !agreedExtraDistanceCharge;
 
   const step1TripComplete = useMemo(
     () =>
@@ -542,7 +619,8 @@ function Step1Details({
       serviceType === "city-tour" ||
       serviceType === "custom-route" ||
       distanceState.distanceKm === null ||
-      distanceState.withinLimit;
+      distanceState.withinLimit ||
+      agreedExtraDistanceCharge;
     setIsValidating(false);
     if (valid && distanceOk) {
       persistConfirmationDraft();
@@ -669,6 +747,21 @@ function Step1Details({
                   ) : null}
                 </p>
               )}
+              {!distanceState.loading &&
+                distanceState.distanceKm !== null &&
+                !distanceState.withinLimit && (
+                  <p className="mt-2 text-sm text-amber-200">
+                    {t("distanceOverLimitSummary", {
+                      km: distanceState.distanceKm,
+                      maxKm: MAX_DISTANCE_KM,
+                    })}
+                    {distanceState.durationMin != null ? (
+                      <span className="ml-2 text-white/60">
+                        {t("durationApprox", { minutes: distanceState.durationMin })}
+                      </span>
+                    ) : null}
+                  </p>
+                )}
               {!distanceState.loading && distanceState.error && distanceState.distanceKm === null && (
                 <p className="mt-3 text-sm text-amber-500">{distanceState.error}</p>
               )}
@@ -734,12 +827,28 @@ function Step1Details({
               name="pickupLocation"
               control={control}
               render={({ field }) => (
-                <AddressAutocomplete
-                  {...field}
-                  value={field.value ?? ""}
-                  placeholder={t("addressPlaceholder")}
-                  className={`w-full rounded-lg border px-4 py-2.5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] ${errors.pickupLocation ? "border-red-500" : "border-neutral-700"} bg-[var(--dark-slate)]/50`}
-                />
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
+                  <AddressAutocomplete
+                    {...field}
+                    value={field.value ?? ""}
+                    placeholder={t("addressPlaceholder")}
+                    className={`min-w-0 flex-1 rounded-lg border px-4 py-2.5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] ${errors.pickupLocation ? "border-red-500" : "border-neutral-700"} bg-[var(--dark-slate)]/50`}
+                  />
+                  <PickupCurrentLocationButton
+                    messages={{
+                      locating: t("currentLocationLocating"),
+                      useShort: t("currentLocationUseShort"),
+                      denied: t("currentLocationDenied"),
+                      unavailable: t("currentLocationUnavailable"),
+                      reverseFailed: t("currentLocationReverseFailed"),
+                      ariaLabel: t("currentLocationAria"),
+                    }}
+                    onAddress={(addr) => {
+                      field.onChange(addr);
+                      void trigger("pickupLocation");
+                    }}
+                  />
+                </div>
               )}
             />
           )}
@@ -800,11 +909,38 @@ function Step1Details({
                 })}
               </p>
             )}
+            {serviceType === "vasteras-route" && !distanceState.withinLimit && distanceState.distanceKm !== null && (
+              <p className="mt-3 block min-h-[1.5rem] text-left text-xs leading-relaxed text-red-400">
+                {t("distanceExceeds", {
+                  km: distanceState.distanceKm ?? 0,
+                  maxKm: MAX_DISTANCE_KM,
+                })}
+              </p>
+            )}
             {serviceType === "airport-pickup" && distanceState.withinLimit && distanceState.distanceKm !== null && !distanceState.loading && (
               <p className="mt-3 block min-h-[1.5rem] text-left text-sm leading-relaxed text-green-500">
                 {t("dropoffWithinArea", { km: distanceState.distanceKm ?? 0 })}
               </p>
             )}
+          </div>
+        )}
+
+        {distanceOverLimit && (
+          <div className="rounded-lg border border-amber-600/50 bg-amber-950/25 p-4">
+            <label className="flex cursor-pointer items-start gap-3 text-left">
+              <input
+                type="checkbox"
+                checked={agreedExtraDistanceCharge}
+                onChange={(e) => setAgreedExtraDistanceCharge(e.target.checked)}
+                className="mt-1 size-4 shrink-0 rounded border-neutral-500 accent-[var(--accent)]"
+              />
+              <span className="text-sm leading-snug text-white/90">
+                {t("extraDistanceChargeAgree", {
+                  amount: EXTRA_DISTANCE_CHARGE_SEK_PER_KM,
+                  maxKm: MAX_DISTANCE_KM,
+                })}
+              </span>
+            </label>
           </div>
         )}
 

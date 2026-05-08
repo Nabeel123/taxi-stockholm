@@ -1,5 +1,8 @@
 const MAX_DISTANCE_KM = 47;
 
+/** Per-km surcharge after `MAX_DISTANCE_KM` (shown in booking UI; enforce in pricing separately if needed). */
+const EXTRA_DISTANCE_CHARGE_SEK_PER_KM = 20;
+
 interface GeocodeResult {
   lat: number;
   lon: number;
@@ -75,4 +78,4 @@ export async function calculateRouteDistance(
   };
 }
 
-export { MAX_DISTANCE_KM };
+export { MAX_DISTANCE_KM, EXTRA_DISTANCE_CHARGE_SEK_PER_KM };
