@@ -1,7 +1,6 @@
 "use client";
 
 import { Fragment, useCallback } from "react";
-import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { usePathname } from "@/i18n/navigation";
 import { motion } from "framer-motion";
@@ -11,9 +10,6 @@ import { COMPANY } from "@/lib/site";
 
 /** Matches `Header` so hash updates after programmatic scroll refresh active nav. */
 const LOCATION_SYNC = "header:locationsync";
-
-/** Used when masthead Background is “Image” (not configurable in CMS). */
-const HERO_BACKGROUND_IMAGE = "/masthead.jpg";
 
 type HeroProps = {
   content: MastheadContent;
@@ -39,38 +35,29 @@ export default function Hero({ content }: HeroProps) {
   return (
     <section id="hero" className="relative flex min-h-screen flex-col justify-end overflow-hidden">
       <div className="absolute inset-0">
+        <div
+          className="absolute inset-0 bg-gradient-to-br from-[var(--primary)] via-[#1c2a45] to-[#0a1220]"
+          aria-hidden
+        />
+        <div
+          className="absolute inset-0 bg-[radial-gradient(ellipse_120%_80%_at_50%_-20%,color-mix(in_oklab,var(--accent)_18%,transparent),transparent_55%)]"
+          aria-hidden
+        />
         {isVideo ? (
-          <>
-            <div
-              className="absolute inset-0 bg-[var(--dark-slate)] md:hidden"
-              aria-hidden
-            />
-            <video
-              className="absolute inset-0 hidden h-full w-full object-cover object-center md:block"
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
-              poster={content.posterUrl || undefined}
-              aria-hidden
-            >
-              {content.videoUrl ? (
-                <source src={content.videoUrl} type="video/mp4" />
-              ) : null}
-            </video>
-          </>
-        ) : (
-          <Image
-            src={HERO_BACKGROUND_IMAGE}
-            alt=""
-            fill
-            className="object-cover object-center"
-            sizes="100vw"
-            priority
+          <video
+            className="absolute inset-0 hidden h-full w-full object-cover object-center md:block"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
             aria-hidden
-          />
-        )}
+          >
+            {content.videoUrl ? (
+              <source src={content.videoUrl} type="video/mp4" />
+            ) : null}
+          </video>
+        ) : null}
         <div
           className="absolute inset-0 bg-[var(--dark-slate)]/30"
           aria-hidden
