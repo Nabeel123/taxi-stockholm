@@ -1,6 +1,16 @@
 "use client";
 
-import { useState, useEffect, useLayoutEffect, useCallback, useRef, useId, Suspense, useMemo } from "react";
+import {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useCallback,
+  useRef,
+  useId,
+  Suspense,
+  useMemo,
+  useSyncExternalStore,
+} from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import DatePicker from "react-datepicker";
@@ -91,6 +101,58 @@ function readBookingConfirmationDraft(): Partial<BookingFormData> | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * Session draft for step 3: first paint must match SSR (null) so we defer the
+ * sessionStorage read until a microtask after subscribe, then notify via useSyncExternalStore.
+ */
+function createBookingConfirmationDraftStore() {
+  let snapshot: Partial<BookingFormData> | null | undefined = undefined;
+  const listeners = new Set<() => void>();
+  let microtaskQueued = false;
+
+  return {
+    subscribe(onChange: () => void) {
+      listeners.add(onChange);
+      if (typeof window !== "undefined" && snapshot === undefined && !microtaskQueued) {
+        microtaskQueued = true;
+        queueMicrotask(() => {
+          microtaskQueued = false;
+          snapshot = readBookingConfirmationDraft();
+          // #region agent log
+          fetch("http://127.0.0.1:7492/ingest/e2288c62-2022-4c78-b877-c0a925005346", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "8f8fe3" },
+            body: JSON.stringify({
+              sessionId: "8f8fe3",
+              hypothesisId: "H3-verify",
+              runId: "post-fix",
+              location: "BookingForm.tsx:confirmationDraftStore",
+              message: "Deferred sessionStorage draft read after hydration",
+              data: {
+                hasDraft: Boolean(snapshot?.pickupLocation || snapshot?.dropoffLocation),
+              },
+              timestamp: Date.now(),
+            }),
+          }).catch(() => {});
+          // #endregion
+          listeners.forEach((l) => l());
+        });
+      }
+      return () => {
+        listeners.delete(onChange);
+      };
+    },
+    getSnapshot(): Partial<BookingFormData> | null {
+      if (typeof window === "undefined") return null;
+      if (snapshot === undefined) return null;
+      return snapshot ?? null;
+    },
+    getServerSnapshot(): Partial<BookingFormData> | null {
+      return null;
+    },
+  };
 }
 
 interface BookingFormProps {
@@ -1359,8 +1421,13 @@ function Step3Confirmation({
   const tSite = useTranslations("site");
   const router = useRouter();
   const data = getValues();
-  const draftFallback =
-    typeof window !== "undefined" ? readBookingConfirmationDraft() : null;
+  const draftStore = useMemo(() => createBookingConfirmationDraftStore(), []);
+  const clientDraft = useSyncExternalStore(
+    draftStore.subscribe,
+    draftStore.getSnapshot,
+    draftStore.getServerSnapshot,
+  );
+
   const confettiFiredRef = useRef(false);
   const [secondsLeft, setSecondsLeft] = useState(Math.ceil(REDIRECT_HOME_MS / 1000));
 
@@ -1414,17 +1481,17 @@ function Step3Confirmation({
           <div className="mt-3 space-y-1 text-sm text-white/80">
             <p>
               {t("routeSummary", {
-                pickup: data.pickupLocation || draftFallback?.pickupLocation || "—",
-                dropoff: data.dropoffLocation || draftFallback?.dropoffLocation || "—",
+                pickup: data.pickupLocation || clientDraft?.pickupLocation || "—",
+                dropoff: data.dropoffLocation || clientDraft?.dropoffLocation || "—",
               })}
             </p>
             <p>
               {t("dateSummary", {
-                date: formatBookingDateForDisplay(data.pickupDate ?? draftFallback?.pickupDate, localeTag),
+                date: formatBookingDateForDisplay(data.pickupDate ?? clientDraft?.pickupDate, localeTag),
               })}
             </p>
-            <p>{t("timeSummary", { time: data.pickupTime || draftFallback?.pickupTime || "—" })}</p>
-            <p>{t("passengersSummary", { passengers: data.passengers || draftFallback?.passengers || "—" })}</p>
+            <p>{t("timeSummary", { time: data.pickupTime || clientDraft?.pickupTime || "—" })}</p>
+            <p>{t("passengersSummary", { passengers: data.passengers || clientDraft?.passengers || "—" })}</p>
           </div>
           {!isCustomRoute && (
             <p className="mt-3 text-lg font-bold text-[var(--accent)]">
