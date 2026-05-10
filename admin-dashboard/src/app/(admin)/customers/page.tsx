@@ -35,7 +35,7 @@ export default async function CustomersPage() {
         description="Who books most often, who spends most and where they're going."
       />
 
-      <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
         <KpiCard
           label="Unique customers"
           value={formatNumber(uniqueCustomers.size)}

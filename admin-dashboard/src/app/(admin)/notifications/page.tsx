@@ -39,7 +39,7 @@ export default async function NotificationsPage() {
         description="Operational alerts derived from live booking activity."
       />
 
-      <section className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+      <section className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-5">
         {(Object.keys(NOTIFICATION_KIND_LABELS) as NotificationKind[]).map((k) => (
           <div
             key={k}

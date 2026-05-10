@@ -180,9 +180,14 @@ export function BookingsTable({ bookings, compact = false, pageSize: initialPage
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
       {!compact && (
-        <div className="flex flex-col gap-3 border-b border-gray-100 px-5 py-4 dark:border-gray-800 sm:px-6 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between">
-          <div className="flex w-full flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:gap-2">
+        <div className="flex flex-col gap-3 border-b border-gray-100 px-4 py-4 dark:border-gray-800 sm:px-6 xl:flex-row xl:items-center xl:gap-4">
+          {/* Row 1 on narrow viewports / left cluster on xl: search */}
+          <div className="w-full xl:max-w-xs xl:flex-shrink-0">
             <SearchInput value={search} onChange={onSearch} />
+          </div>
+
+          {/* Row 2: filters + dates wrap freely so nothing overflows on tablets */}
+          <div className="flex flex-wrap items-center gap-2 xl:flex-1 xl:justify-end">
             <FilterSelect
               label="Status"
               value={statusFilter}
@@ -210,17 +215,16 @@ export function BookingsTable({ bookings, compact = false, pageSize: initialPage
               }}
               options={[{ value: "all", label: "All services" }, ...SERVICE_TYPES.map((s) => ({ value: s, label: SERVICE_TYPE_LABELS[s] }))]}
             />
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
             <DateInput label="From" value={from} onChange={(v) => { setFrom(v); setPage(1); }} />
             <DateInput label="To" value={to} onChange={(v) => { setTo(v); setPage(1); }} />
             <button
               type="button"
               onClick={exportCsv}
-              className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-white/[0.04]"
+              className="inline-flex h-10 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-white/[0.04]"
             >
               <DownloadIcon />
-              Export CSV
+              <span className="hidden sm:inline">Export CSV</span>
+              <span className="sm:hidden">CSV</span>
             </button>
           </div>
         </div>

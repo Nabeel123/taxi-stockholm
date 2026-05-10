@@ -62,7 +62,7 @@ export function UpcomingTripsList({ bookings }: { bookings: readonly Booking[] }
         return (
           <li key={booking.id} className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:gap-5">
             <div
-              className={`flex h-12 min-w-[64px] items-center justify-center rounded-xl px-3 text-xs font-semibold tabular-nums ${TONE_STYLES[tone]}`}
+              className={`flex h-12 w-fit min-w-[64px] items-center justify-center rounded-xl px-3 text-xs font-semibold tabular-nums ${TONE_STYLES[tone]}`}
               aria-label={`Pickup in ${label}`}
             >
               {label}
@@ -110,7 +110,7 @@ export function UpcomingTripsList({ bookings }: { bookings: readonly Booking[] }
 
             <Link
               href={`/bookings/${booking.id}`}
-              className="inline-flex items-center justify-center rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-white/[0.04] sm:self-center"
+              className="inline-flex w-fit items-center justify-center rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-white/[0.04] sm:self-center"
             >
               View
             </Link>

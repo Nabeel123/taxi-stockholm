@@ -71,6 +71,24 @@ function deriveStatus(kind: CompletionKind | null): BookingStatus {
   }
 }
 
+/**
+ * Promote bookings whose scheduled pickup has already passed to `completed`.
+ *
+ * Until a real dispatch state machine writes back live status (driver_assigned,
+ * picked_up, completed…), the most informative view is: anything past its pickup
+ * time is no longer "upcoming" — it's done. Cancellations are preserved.
+ */
+function applyTimeBasedStatus(
+  raw: BookingStatus,
+  pickupAt: string,
+  nowMs: number,
+): BookingStatus {
+  if (raw === "cancelled") return raw;
+  const pickupMs = new Date(pickupAt).getTime();
+  if (!Number.isFinite(pickupMs)) return raw;
+  return pickupMs < nowMs ? "completed" : raw;
+}
+
 function derivePaymentStatus(kind: CompletionKind | null): PaymentStatus {
   switch (kind) {
     case "stripe_paid":
@@ -95,7 +113,7 @@ function combinePickupAt(dateRaw: unknown, timeRaw: unknown, fallbackIso: string
   return base.toISOString();
 }
 
-function normalize(row: BookingSnapshotRow): Booking {
+function normalize(row: BookingSnapshotRow, nowMs: number): Booking {
   const b = (row.booking_json ?? {}) as Record<string, unknown>;
   const completionKind = (asString(row.completion_kind) ?? null) as CompletionKind | null;
   const { amount, currency } = parseAmountFromPackage(row.package_label);
@@ -125,7 +143,7 @@ function normalize(row: BookingSnapshotRow): Booking {
     amount,
     currency: currency ?? "SEK",
     packageLabel: row.package_label,
-    status: deriveStatus(completionKind),
+    status: applyTimeBasedStatus(deriveStatus(completionKind), pickupAt, nowMs),
     paymentStatus: derivePaymentStatus(completionKind),
     completionKind,
     paymentIntentId: row.payment_intent_id,
@@ -158,7 +176,10 @@ async function fetchBookingsRaw(limit: number): Promise<Booking[]> {
     return [];
   }
 
-  return (data ?? []).map((row) => normalize(row as BookingSnapshotRow));
+  /* Stamp `now` once per fetch so all rows share a consistent comparison clock and
+   * stay coherent with the cache window (60s). */
+  const nowMs = Date.now();
+  return (data ?? []).map((row) => normalize(row as BookingSnapshotRow, nowMs));
 }
 
 export const getBookings = unstable_cache(
@@ -178,5 +199,5 @@ export async function getBookingById(id: string): Promise<Booking | null> {
     .eq("id", id)
     .maybeSingle();
   if (error || !data) return null;
-  return normalize(data as BookingSnapshotRow);
+  return normalize(data as BookingSnapshotRow, Date.now());
 }
