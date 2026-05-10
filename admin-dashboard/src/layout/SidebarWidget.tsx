@@ -2,23 +2,17 @@ import React from "react";
 
 export default function SidebarWidget() {
   return (
-    <div
-      className={`
-        mx-auto mb-10 w-full max-w-60 rounded-2xl bg-gray-50 px-4 py-5 text-center dark:bg-white/[0.03]`}
-    >
-      <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">
-        #1 Tailwind CSS Dashboard
-      </h3>
-      <p className="mb-4 text-gray-500 text-theme-sm dark:text-gray-400">
-        Leading Tailwind CSS Admin Template with 400+ UI Component and Pages.
+    <div className="mx-auto mb-10 w-full max-w-60 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 px-4 py-5 text-center text-white shadow-md shadow-brand-500/20">
+      <p className="text-xs font-semibold uppercase tracking-wider opacity-80">Live ops</p>
+      <h3 className="mt-1 text-base font-semibold">Need real-time dispatch?</h3>
+      <p className="mt-1 text-xs leading-relaxed text-white/80">
+        Connect drivers, GPS feeds and webhooks to upgrade this dashboard to a full dispatch console.
       </p>
       <a
-        href="https://tailadmin.com/pricing"
-        target="_blank"
-        rel="nofollow"
-        className="flex items-center justify-center p-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
+        href="mailto:info@bookarlandataxi.se?subject=Dispatch%20console"
+        className="mt-3 inline-flex w-full items-center justify-center rounded-lg bg-white/15 px-3 py-2 text-xs font-semibold text-white backdrop-blur transition hover:bg-white/25"
       >
-        Upgrade To Pro
+        Talk to ops
       </a>
     </div>
   );

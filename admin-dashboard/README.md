@@ -1,208 +1,98 @@
-# TailAdmin Next.js - Free Next.js Tailwind Admin Dashboard Template
+# Arlanda Taxi · Dispatch Dashboard
 
-TailAdmin is a free and open-source admin dashboard template built on **Next.js and Tailwind CSS** providing developers with everything they need to create a feature-rich and data-driven: back-end, dashboard, or admin panel solution for any sort of web project.
+Operations dashboard for the Book Arlanda Taxi fleet — bookings, driver operations,
+revenue analytics and customer insights. Built on Next.js 16 (App Router) with React 19,
+TypeScript, Tailwind CSS v4 and ApexCharts. Booking data is read directly from the
+shared Supabase project that backs the customer-facing site (one source of truth).
 
-![TailAdmin - Next.js Dashboard Preview](./banner.png)
+## Architecture
 
-With TailAdmin Next.js, you get access to all the necessary dashboard UI components, elements, and pages required to build a high-quality and complete dashboard or admin panel. Whether you're building a dashboard or admin panel for a complex web application or a simple website.
-
-TailAdmin utilizes the powerful features of **Next.js 16** and common features of Next.js such as server-side rendering (SSR), static site generation (SSG), and seamless API route integration. Combined with the advancements of **React 19** and the robustness of **TypeScript**, TailAdmin is the perfect solution to help get your project up and running quickly.
-
-## Overview
-
-TailAdmin provides essential UI components and layouts for building feature-rich, data-driven admin dashboards and control panels. It's built on:
-
-* Next.js 16.x
-* React 19
-* TypeScript
-* Tailwind CSS V4
-
-### Quick Links
-
-* [✨ Visit Website](https://tailadmin.com)
-* [📄 Documentation](https://tailadmin.com/docs)
-* [⬇️ Download](https://tailadmin.com/download)
-* [🖌️ Figma Design File (Community Edition)](https://www.figma.com/community/file/1463141366275764364)
-* [⚡ Get PRO Version](https://tailadmin.com/pricing)
-
-### Demos
-
-* [Free Version](https://nextjs-free-demo.tailadmin.com)
-* [Pro Version](https://nextjs-demo.tailadmin.com)
-
-### Other Versions
-
-- [Next.js Version](https://github.com/TailAdmin/free-nextjs-admin-dashboard)
-- [React.js Version](https://github.com/TailAdmin/free-react-tailwind-admin-dashboard)
-- [Vue.js Version](https://github.com/TailAdmin/vue-tailwind-admin-dashboard)
-- [Angular Version](https://github.com/TailAdmin/free-angular-tailwind-dashboard)
-- [Laravel Version](https://github.com/TailAdmin/tailadmin-laravel)
-
-## Installation
-
-### Prerequisites
-
-To get started with TailAdmin, ensure you have the following prerequisites installed and set up:
-
-* Node.js 18.x or later (recommended to use Node.js 20.x or later)
-
-### Cloning the Repository
-
-Clone the repository using the following command:
-
-```bash
-git clone https://github.com/TailAdmin/free-nextjs-admin-dashboard.git
+```
+src/
+  app/(admin)/          — sidebar-flanked dashboard routes
+    page.tsx            — Overview (KPIs, revenue chart, upcoming trips, recent bookings)
+    bookings/           — Bookings table + detail pages
+    analytics/          — Revenue, peak hours, distance, route analytics
+    customers/          — Top customers, repeat customers, frequent destinations
+    drivers/            — Live driver status, schedule, daily targets
+    calendar/           — Bookings rendered on a FullCalendar grid
+    notifications/      — Activity feed derived from booking events
+    account/            — Operator + integrations
+  components/
+    dashboard/          — Reusable: KpiCard, SectionCard, BookingsTable, charts/*, Skeleton
+    calendar/           — FullCalendar wrapper that maps Bookings → events
+    ui/                 — Inherited TailAdmin atoms (Badge, Modal, Dropdown, Table)
+  context/              — Sidebar + Theme providers (client)
+  layout/               — AppSidebar, AppHeader, Backdrop, SidebarWidget
+  lib/                  — Server-only Supabase client (service role)
+  services/             — Booking + analytics + driver + notification queries (server-only)
+  types/                — Domain types (Booking, Driver, Notification)
+  utils/                — Formatters + CSV exporter (browser-safe)
 ```
 
-> Windows Users: place the repository near the root of your drive if you face issues while cloning.
+### Data flow
 
-1. Install dependencies:
+```
+form_submissions (jsonb)  ──┐
+                            ├──▶ booking_form_snapshots (view)  ──▶  services/bookings.ts (normalize) ──▶ pages
+                            │
+Stripe / quote / manual ────┘
+```
 
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
+The customer-facing app at `taxi/` writes booking rows into Supabase. This dashboard reads
+the `booking_form_snapshots` view (server-only), normalizes the JSONB payload into typed
+`Booking` objects in `services/bookings.ts`, then derives every chart, KPI and table from
+that one in-memory pass via `services/analytics.ts`.
 
-   > Use `--legacy-peer-deps` flag if you face peer-dependency error during installation.
+Drivers and notifications are sourced from `services/drivers.ts` (deterministic mock) and
+`services/notifications.ts` (synthesized from booking activity) until dedicated tables
+exist — both have stable interfaces that can be swapped to Supabase queries without
+touching pages.
 
-2. Start the development server:
+## Getting started
 
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
+```bash
+cp .env.local.example .env.local           # then fill in Supabase credentials
+npm install
+npm run dev
+```
 
-## Components
+The dashboard runs on `http://localhost:3000` by default. Without Supabase credentials
+the pages render with empty states (no errors thrown).
 
-TailAdmin is a pre-designed starting point for building a web-based dashboard using Next.js and Tailwind CSS. The template includes:
+## Status workflow
 
-* Sophisticated and accessible sidebar
-* Data visualization components
-* Profile management and custom 404 page
-* Tables and Charts(Line and Bar)
-* Authentication forms and input elements
-* Alerts, Dropdowns, Modals, Buttons and more
-* Can't forget Dark Mode 🕶️
+`pending → confirmed → driver_assigned → on_the_way → picked_up → completed`
+(plus `cancelled`). Initial status is derived from the customer app's `completion_kind`:
 
-All components are built with React and styled using Tailwind CSS for easy customization.
+| `completion_kind` | Booking status | Payment status |
+| ----------------- | -------------- | -------------- |
+| `stripe_paid`     | `confirmed`    | `paid`         |
+| `manual_confirm`  | `pending`      | `unpaid`       |
+| `quote_request`   | `pending`      | `quote`        |
 
-## Feature Comparison
+To wire dispatch transitions into the workflow, add a `status` column to `form_submissions`
+(or a side table keyed by `booking_id`) and update `services/bookings.ts` to read it.
 
-### Free Version
+## Performance notes
 
-* 1 Unique Dashboard
-* 30+ dashboard components
-* 50+ UI elements
-* Basic Figma design files
-* Community support
+- All heavy data fetching happens in **Server Components**; the booking list is fetched
+  once per request and reused across charts/tables (see `getBookings()` cached for 60s).
+- Charts (`ApexCharts`) are dynamically imported with `ssr: false` so they never block
+  the initial paint and aren't bundled for routes that don't render them.
+- `BookingsTable` filters/sorts in-memory using `useDeferredValue` to keep typing snappy
+  even at 1k rows; pagination caps DOM size for low-end devices.
+- The Supabase client is server-only (`import "server-only"`) — credentials never reach
+  the browser bundle.
 
-### Pro Version
+## Production checklist
 
-* 7 Unique Dashboards: Analytics, Ecommerce, Marketing, CRM, SaaS, Stocks, Logistics (more coming soon)
-* 500+ dashboard components and UI elements
-* Complete Figma design file
-* Email support
+Before going live with real customers visiting:
 
-To learn more about pro version features and pricing, visit our [pricing page](https://tailadmin.com/pricing).
-
-## Changelog
-
-### Version 2.3.0 - [April 28, 2026]
-
-- **New Feature**: Added **AI Dashboard** with token usage and revenue tracking.
-- **New Feature**: Added **Sales Dashboard** with retention and multi-channel analytics.
-- **New Feature**: Added **Finance Dashboard** with cashflow and balance management.
-- **New Feature**: Introduced **6 New Layout variations** for improved UI flexibility.
-- **Enhancement**: Integrated **Advanced Data Visualization** with 7+ new chart types.
-
-### Version 2.2.3 - [March 15, 2026]
-
-* update ESLint configuration and dependencies; upgrade Next.js to version 16.1.6
-
-### Version 2.2.2 - [December 30, 2025]
-
-* Fixed date picker positioning and functionality in Statistics Chart.
-
-
-### Version 2.1.0 - [November 15, 2025]
-
-* Updated to Next.js 16.x
-* Fixed all reported minor bugs
-
-### Version 2.0.2 - [March 25, 2025]
-
-* Upgraded to Next.js 16.x for [CVE-2025-29927](https://nextjs.org/blog/cve-2025-29927) concerns
-* Included overrides vectormap for packages to prevent peer dependency errors during installation.
-* Migrated from react-flatpickr to flatpickr package for React 19 support
-
-### Version 2.0.1 - [February 27, 2025]
-
-#### Update Overview
-
-* Upgraded to Tailwind CSS v4 for better performance and efficiency.
-* Updated class usage to match the latest syntax and features.
-* Replaced deprecated class and optimized styles.
-
-#### Next Steps
-
-* Run npm install or yarn install to update dependencies.
-* Check for any style changes or compatibility issues.
-* Refer to the Tailwind CSS v4 [Migration Guide](https://tailwindcss.com/docs/upgrade-guide) on this release. if needed.
-* This update keeps the project up to date with the latest Tailwind improvements. 🚀
-
-### v2.0.0 (February 2025)
-
-A major update focused on Next.js 16 implementation and comprehensive redesign.
-
-#### Major Improvements
-
-* Complete redesign using Next.js 16 App Router and React Server Components
-* Enhanced user interface with Next.js-optimized components
-* Improved responsiveness and accessibility
-* New features including collapsible sidebar, chat screens, and calendar
-* Redesigned authentication using Next.js App Router and server actions
-* Updated data visualization using ApexCharts for React
-
-#### Breaking Changes
-
-* Migrated from Next.js 14 to Next.js 16
-* Chart components now use ApexCharts for React
-* Authentication flow updated to use Server Actions and middleware
-
-[Read more](https://tailadmin.com/docs/update-logs/nextjs) on this release.
-
-### v1.3.4 (July 01, 2024)
-
-* Fixed JSvectormap rendering issues
-
-### v1.3.3 (June 20, 2024)
-
-* Fixed build error related to Loader component
-
-### v1.3.2 (June 19, 2024)
-
-* Added ClickOutside component for dropdown menus
-* Refactored sidebar components
-* Updated Jsvectormap package
-
-### v1.3.1 (Feb 12, 2024)
-
-* Fixed layout naming consistency
-* Updated styles
-
-### v1.3.0 (Feb 05, 2024)
-
-* Upgraded to Next.js 14
-* Added Flatpickr integration
-* Improved form elements
-* Enhanced multiselect functionality
-* Added default layout component
-
-## License
-
-TailAdmin Next.js Free Version is released under the MIT License.
-
-## Support
-If you find this project helpful, please consider giving it a star on GitHub. Your support helps us continue developing and maintaining this template.
+1. Add an authentication layer in front of `/(admin)` — Supabase Auth or Clerk both
+   integrate cleanly. Wrap the `(admin)/layout.tsx` to gate access.
+2. Replace the mock driver provider with a real Supabase query.
+3. Promote the dispatch transitions (`driver_assigned`, `on_the_way`, `picked_up`,
+   `completed`, `cancelled`) into the database so the workflow becomes authoritative.
+4. Tighten the `unstable_cache` revalidation window or move to tag-based invalidation
+   (`revalidateTag('bookings')` on insert/update from the customer app).

@@ -7,9 +7,11 @@ import ContactForm from "@/components/ContactForm";
 
 type ContactPageClientProps = {
   recaptchaSiteKey: string | null;
+  /** From server env: v3 Score keys vs v2 “I'm not a robot” Checkbox. */
+  recaptchaUseV3: boolean;
 };
 
-export default function ContactPageClient({ recaptchaSiteKey }: ContactPageClientProps) {
+export default function ContactPageClient({ recaptchaSiteKey, recaptchaUseV3 }: ContactPageClientProps) {
   const t = useTranslations("contactPage");
 
   return (
@@ -21,7 +23,7 @@ export default function ContactPageClient({ recaptchaSiteKey }: ContactPageClien
           <p className="mt-2 text-sm text-white/65 sm:text-base">{t("subtitle")}</p>
 
           <div className="mt-8 rounded-xl border border-neutral-700 bg-neutral-900/35 p-6 sm:p-8">
-            <ContactForm recaptchaSiteKey={recaptchaSiteKey} />
+            <ContactForm recaptchaSiteKey={recaptchaSiteKey} recaptchaUseV3={recaptchaUseV3} />
           </div>
 
           <p className="mt-6 text-center text-xs text-white/45">{t("privacyNote")}</p>

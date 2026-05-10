@@ -11,19 +11,16 @@ import { COMPANY } from "@/lib/site";
 import { Loader2 } from "lucide-react";
 import type { z } from "zod";
 
-/** v3 scores via `execute()`; v2 uses the “I’m not a robot” checkbox. v3 keys with v2 widgets → “Invalid key type”. */
-const CONTACT_RECAPTCHA_V3_ENABLED =
-  process.env.NEXT_PUBLIC_RECAPTCHA_V3 === "1" ||
-  process.env.NEXT_PUBLIC_RECAPTCHA_V3 === "true";
-
 type ContactFormInput = z.input<typeof contactSubmissionSchema>;
 
 type Props = {
   /** From `GOOGLE_CAPTCHA_SITE_KEY` (server-passed); if missing, CAPTCHA widget is omitted and API skips verification when secret is unset. */
   recaptchaSiteKey: string | null;
+  /** v3 Score keys: `execute()` + api.js?render=; v2 Checkbox: checkbox widget. Wrong mode → “Invalid key type”. */
+  recaptchaUseV3: boolean;
 };
 
-export default function ContactForm({ recaptchaSiteKey }: Props) {
+export default function ContactForm({ recaptchaSiteKey, recaptchaUseV3 }: Props) {
   const t = useTranslations("contactPage");
   const pathname = usePathname();
   const locale = useLocale();
@@ -34,28 +31,7 @@ export default function ContactForm({ recaptchaSiteKey }: Props) {
   const widgetIdRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!recaptchaSiteKey) return;
-    // #region agent log
-    fetch("http://127.0.0.1:7492/ingest/e2288c62-2022-4c78-b877-c0a925005346", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "8f8fe3" },
-      body: JSON.stringify({
-        sessionId: "8f8fe3",
-        hypothesisId: "H1-recaptcha-key-type-integration",
-        location: "ContactForm.tsx:recaptcha-config",
-        message: "Contact reCAPTCHA client integration",
-        data: {
-          integration: CONTACT_RECAPTCHA_V3_ENABLED ? "v3_execute" : "v2_checkbox_render",
-          keyLength: recaptchaSiteKey.length,
-        },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
-  }, [recaptchaSiteKey]);
-
-  useEffect(() => {
-    if (CONTACT_RECAPTCHA_V3_ENABLED) return;
+    if (recaptchaUseV3) return;
     if (!recaptchaSiteKey || !recaptchaReady || !containerRef.current) return;
     if (widgetIdRef.current !== null) return;
     const g = window.grecaptcha;
@@ -67,12 +43,13 @@ export default function ContactForm({ recaptchaSiteKey }: Props) {
         theme: "dark",
       });
     });
-  }, [recaptchaSiteKey, recaptchaReady, status]);
+  }, [recaptchaSiteKey, recaptchaReady, recaptchaUseV3, status]);
 
   useEffect(() => {
+    const node = containerRef.current;
     return () => {
       widgetIdRef.current = null;
-      if (containerRef.current) containerRef.current.innerHTML = "";
+      if (node) node.innerHTML = "";
     };
   }, [recaptchaSiteKey]);
 
@@ -105,7 +82,7 @@ export default function ContactForm({ recaptchaSiteKey }: Props) {
         setStatus("idle");
         return;
       }
-      if (CONTACT_RECAPTCHA_V3_ENABLED) {
+      if (recaptchaUseV3) {
         try {
           await new Promise<void>((resolve) => {
             g.ready(() => resolve());
@@ -191,7 +168,7 @@ export default function ContactForm({ recaptchaSiteKey }: Props) {
       {recaptchaSiteKey ? (
         <Script
           src={
-            CONTACT_RECAPTCHA_V3_ENABLED
+            recaptchaUseV3
               ? `https://www.google.com/recaptcha/api.js?render=${encodeURIComponent(recaptchaSiteKey)}`
               : "https://www.google.com/recaptcha/api.js"
           }
@@ -216,7 +193,13 @@ export default function ContactForm({ recaptchaSiteKey }: Props) {
         </button>
       </div>
       ) : (
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+      <form
+        className="space-y-5"
+        noValidate
+        onSubmit={(e) => {
+          void handleSubmit(onSubmit)(e);
+        }}
+      >
         {status === "error" ? (
           <div
             className="rounded-lg border border-red-500/40 bg-red-950/40 px-4 py-3 text-sm text-red-100"
@@ -296,7 +279,7 @@ export default function ContactForm({ recaptchaSiteKey }: Props) {
           ) : null}
         </div>
 
-        {recaptchaSiteKey && !CONTACT_RECAPTCHA_V3_ENABLED ? (
+        {recaptchaSiteKey && !recaptchaUseV3 ? (
           <div className="flex justify-center [&_iframe]:max-w-full">
             <div ref={containerRef} />
           </div>
