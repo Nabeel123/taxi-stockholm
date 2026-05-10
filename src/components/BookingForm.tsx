@@ -34,8 +34,14 @@ import {
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import { bookingSchema, type BookingFormData } from "@/lib/booking-schema";
-import { PASSENGER_OPTIONS, SERVICE_OPTIONS } from "@/lib/booking-schema";
+import {
+  bookingSchema,
+  PASSENGER_OPTIONS,
+  SERVICE_OPTIONS,
+  type BookingFormData,
+} from "@/lib/booking-schema";
+import type { BookingStep2SuccessMeta } from "@/lib/booking-submission-schema";
+import { getBookingClientTimezoneHint } from "@/lib/client-geo-booking";
 import {
   calculateRouteDistance,
   EXTRA_DISTANCE_CHARGE_SEK_PER_KM,
@@ -68,6 +74,43 @@ const BOOKING_STEP_CONFIRM = 2;
 
 /** Survives Stripe redirect full-page return so step 3 can show trip details */
 const BOOKING_CONFIRMATION_DRAFT_KEY = "sahotra.booking.confirmationDraft.v1";
+
+/** Last computed route km (survives full-page return before distance effect re-runs). */
+const BOOKING_ROUTE_SNAPSHOT_KEY = "sahotra.booking.routeSnapshot.v1";
+
+function clearBookingRouteSnapshotStorage(): void {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.removeItem(BOOKING_ROUTE_SNAPSHOT_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+function persistBookingRouteSnapshotStorage(distanceKm: number, durationMin: number | null): void {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.setItem(
+      BOOKING_ROUTE_SNAPSHOT_KEY,
+      JSON.stringify({ distanceKm, durationMin }),
+    );
+  } catch {
+    /* ignore */
+  }
+}
+
+function readBookingRouteSnapshotStorage(): { distanceKm: number } | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(BOOKING_ROUTE_SNAPSHOT_KEY);
+    if (!raw) return null;
+    const o = JSON.parse(raw) as { distanceKm?: unknown };
+    if (typeof o.distanceKm !== "number" || !Number.isFinite(o.distanceKm)) return null;
+    return { distanceKm: o.distanceKm };
+  } catch {
+    return null;
+  }
+}
 
 function persistBookingConfirmationDraft(values: BookingFormData): void {
   if (typeof window === "undefined") return;
@@ -120,23 +163,6 @@ function createBookingConfirmationDraftStore() {
         queueMicrotask(() => {
           microtaskQueued = false;
           snapshot = readBookingConfirmationDraft();
-          // #region agent log
-          fetch("http://127.0.0.1:7492/ingest/e2288c62-2022-4c78-b877-c0a925005346", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "8f8fe3" },
-            body: JSON.stringify({
-              sessionId: "8f8fe3",
-              hypothesisId: "H3-verify",
-              runId: "post-fix",
-              location: "BookingForm.tsx:confirmationDraftStore",
-              message: "Deferred sessionStorage draft read after hydration",
-              data: {
-                hasDraft: Boolean(snapshot?.pickupLocation || snapshot?.dropoffLocation),
-              },
-              timestamp: Date.now(),
-            }),
-          }).catch(() => {});
-          // #endregion
           listeners.forEach((l) => l());
         });
       }
@@ -273,6 +299,12 @@ function BookingFormInner({
 }: BookingFormProps) {
   const [shake, setShake] = useState(false);
   const distanceCalcSeqRef = useRef(0);
+  /** Latest route calculator output (Stripe redirect completes before React recalculates). */
+  const distanceSnapshotRef = useRef<{ distanceKm: number | null; durationMin: number | null }>({
+    distanceKm: null,
+    durationMin: null,
+  });
+
   const [distanceState, setDistanceState] = useState<{
     loading: boolean;
     distanceKm: number | null;
@@ -281,6 +313,17 @@ function BookingFormInner({
     error?: string;
   }>({ loading: false, distanceKm: null, durationMin: null, withinLimit: true });
   const [agreedExtraDistanceCharge, setAgreedExtraDistanceCharge] = useState(false);
+
+  useEffect(() => {
+    distanceSnapshotRef.current = {
+      distanceKm: distanceState.distanceKm,
+      durationMin: distanceState.durationMin,
+    };
+    const km = distanceState.distanceKm;
+    if (km != null && Number.isFinite(km)) {
+      persistBookingRouteSnapshotStorage(km, distanceState.durationMin);
+    }
+  }, [distanceState.distanceKm, distanceState.durationMin]);
 
   const {
     register,
@@ -367,6 +410,7 @@ function BookingFormInner({
       setValue("pickupLocation", "", { shouldValidate: false });
       setValue("dropoffLocation", arlandaLine, { shouldValidate: false });
     } else if (serviceType === "city-tour" || serviceType === "custom-route") {
+      clearBookingRouteSnapshotStorage();
       setValue("pickupLocation", "", { shouldValidate: false });
       setValue("dropoffLocation", "", { shouldValidate: false });
     }
@@ -394,6 +438,7 @@ function BookingFormInner({
 
     if (st === "city-tour" || st === "custom-route") {
       distanceCalcSeqRef.current += 1;
+      clearBookingRouteSnapshotStorage();
       setDistanceState({
         loading: false,
         distanceKm: null,
@@ -472,21 +517,87 @@ function BookingFormInner({
     setTimeout(() => setShake(false), 500);
   }, []);
 
-  const handlePaymentComplete = useCallback(() => {
-    const data = getValues();
-    const svc = SERVICES.find((s) => s.id === data.serviceType);
-    console.log("Booking submitted:", {
-      ...data,
-      serviceName: svc?.name,
-      price: svc?.price,
-      distanceKm: distanceState.distanceKm,
-    });
-    onSuccess?.(data);
-  }, [getValues, distanceState.distanceKm, onSuccess]);
+  const postBookingRecord = useCallback(
+    (data: BookingFormData, meta: BookingStep2SuccessMeta) => {
+      if (
+        typeof window !== "undefined" &&
+        meta.kind === "stripe_paid" &&
+        meta.paymentIntentId &&
+        meta.paymentIntentId.length > 0
+      ) {
+        const dedupe = `booking-form-record:${meta.paymentIntentId}`;
+        if (sessionStorage.getItem(dedupe)) return;
+        sessionStorage.setItem(dedupe, "1");
+      }
+
+      const qs =
+        typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+      const persistedRoute = readBookingRouteSnapshotStorage();
+      const distanceKm =
+        distanceState.distanceKm != null && Number.isFinite(distanceState.distanceKm)
+          ? distanceState.distanceKm
+          : persistedRoute != null && Number.isFinite(persistedRoute.distanceKm)
+            ? persistedRoute.distanceKm
+            : undefined;
+
+      const clientGeo = getBookingClientTimezoneHint();
+      const sendClientGeo = Boolean(clientGeo.timezone);
+
+      void fetch("/api/booking-submission", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          completionKind: meta.kind,
+          paymentIntentId: meta.paymentIntentId ?? undefined,
+          distanceKm,
+          locale,
+          pagePath: pathname,
+          ...(sendClientGeo ? { clientGeo } : {}),
+          ...(qs
+            ? {
+                utmSource: qs.get("utm_source") ?? undefined,
+                utmMedium: qs.get("utm_medium") ?? undefined,
+                utmCampaign: qs.get("utm_campaign") ?? undefined,
+              }
+            : {}),
+          booking: {
+            ...data,
+            pickupDate:
+              data.pickupDate instanceof Date ? data.pickupDate.toISOString() : data.pickupDate,
+          },
+        }),
+      }).catch(() => {});
+    },
+    [distanceState.distanceKm, locale, pathname],
+  );
+
+  const handlePaymentComplete = useCallback(
+    (meta: BookingStep2SuccessMeta = { kind: "manual_confirm" }) => {
+      const data = getValues();
+      const svc = SERVICES.find((s) => s.id === data.serviceType);
+      console.log("Booking submitted:", {
+        ...data,
+        serviceName: svc?.name,
+        price: svc?.price,
+        distanceKm: distanceState.distanceKm,
+      });
+      postBookingRecord(data, meta);
+      onSuccess?.(data);
+    },
+    [getValues, distanceState.distanceKm, onSuccess, postBookingRecord],
+  );
 
   const persistConfirmationDraft = useCallback(() => {
     persistBookingConfirmationDraft(getValues());
   }, [getValues]);
+
+  const flushBookingDraftBeforeStripeRedirect = useCallback(() => {
+    persistConfirmationDraft();
+    const r = distanceSnapshotRef.current;
+    if (r.distanceKm != null && Number.isFinite(r.distanceKm)) {
+      persistBookingRouteSnapshotStorage(r.distanceKm, r.durationMin);
+    }
+  }, [persistConfirmationDraft]);
 
   useLayoutEffect(() => {
     if (!stripeHostedRedirect || stripeRedirectStatus !== "succeeded") return;
@@ -509,7 +620,10 @@ function BookingFormInner({
     if (typeof window !== "undefined") sessionStorage.setItem(dedupeKey, "1");
 
     if (stripeRedirectStatus === "succeeded") {
-      handlePaymentComplete();
+      handlePaymentComplete({
+        kind: "stripe_paid",
+        paymentIntentId: paymentIntentFromStripe ?? undefined,
+      });
     }
     routerStripeReturn.replace(pathname);
   }, [
@@ -559,6 +673,7 @@ function BookingFormInner({
           onComplete={handlePaymentComplete}
           onCustomRouteComplete={handlePaymentComplete}
           persistConfirmationDraft={persistConfirmationDraft}
+          flushBookingDraftBeforeStripeRedirect={flushBookingDraftBeforeStripeRedirect}
         />
         <Step3Confirmation
           getValues={getValues}
@@ -1039,6 +1154,7 @@ function Step2Payment({
   onComplete,
   onCustomRouteComplete,
   persistConfirmationDraft,
+  flushBookingDraftBeforeStripeRedirect,
 }: {
   register: ReturnType<typeof useForm<BookingFormData>>["register"];
   errors: ReturnType<typeof useForm<BookingFormData>>["formState"]["errors"];
@@ -1047,9 +1163,10 @@ function Step2Payment({
   packagePrice: string;
   packageDisplayName: string;
   localeTag: string;
-  onComplete: () => void;
-  onCustomRouteComplete: () => void;
+  onComplete: (meta?: BookingStep2SuccessMeta) => void;
+  onCustomRouteComplete: (meta?: BookingStep2SuccessMeta) => void;
   persistConfirmationDraft: () => void;
+  flushBookingDraftBeforeStripeRedirect: () => void;
 }) {
   const t = useTranslations("booking");
   const tSite = useTranslations("site");
@@ -1065,13 +1182,19 @@ function Step2Payment({
 
   const paymentCompletedRef = useRef(false);
 
-  const walletDone = useCallback(() => {
-    if (paymentCompletedRef.current) return;
-    paymentCompletedRef.current = true;
-    persistConfirmationDraft();
-    onComplete();
-    nextStep();
-  }, [onComplete, nextStep, persistConfirmationDraft]);
+  const walletDone = useCallback(
+    (paymentIntentId: string | null) => {
+      if (paymentCompletedRef.current) return;
+      paymentCompletedRef.current = true;
+      flushBookingDraftBeforeStripeRedirect();
+      onComplete({
+        kind: "stripe_paid",
+        paymentIntentId: paymentIntentId ?? undefined,
+      });
+      nextStep();
+    },
+    [onComplete, nextStep, flushBookingDraftBeforeStripeRedirect],
+  );
 
   const onStripeConfigError = useCallback(() => {
     setStripePaymentFailed(true);
@@ -1092,7 +1215,7 @@ function Step2Payment({
     persistConfirmationDraft();
     setPaying(true);
     setTimeout(() => {
-      onComplete();
+      onComplete({ kind: "manual_confirm" });
       nextStep();
       setPaying(false);
     }, 800);
@@ -1112,7 +1235,7 @@ function Step2Payment({
     setQuoteSubmitting(false);
     if (!ok) return;
     persistConfirmationDraft();
-    onCustomRouteComplete();
+    onCustomRouteComplete({ kind: "quote_request" });
     nextStep();
   }, [trigger, onCustomRouteComplete, nextStep, persistConfirmationDraft]);
 
@@ -1270,7 +1393,7 @@ function Step2Payment({
                 onConfigurationError={onStripeConfigError}
                 onReadyChange={setStripeReady}
                 onBusyChange={setStripeBusy}
-                onBeforeConfirmPayment={persistConfirmationDraft}
+                onBeforeConfirmPayment={flushBookingDraftBeforeStripeRedirect}
               />
               <p className="flex items-center gap-2 text-xs text-white/50">
                 <Lock className="h-3.5 w-3.5" />

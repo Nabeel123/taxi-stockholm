@@ -8,13 +8,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "studio": "cd backend && npm run dev",
-    "studio:build": "cd backend && npm run build",
-    "studio:deploy": "cd backend && npm run deploy"
+    "verify:form-db": "node --env-file=.env.local scripts/verify-form-submissions.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
-    "@sanity/client": "^7.21.0",
+    "@stripe/react-stripe-js": "^6.3.0",
+    "@stripe/stripe-js": "^9.4.0",
+    "@supabase/ssr": "^0.10.3",
+    "@supabase/supabase-js": "^2.105.4",
     "canvas-confetti": "^1.9.4",
     "framer-motion": "^12.34.3",
     "lucide-react": "^0.575.0",
@@ -26,8 +27,6 @@
     "react-hook-form": "^7.71.2",
     "react-use-wizard": "^2.3.0",
     "stripe": "^17.7.0",
-    "@stripe/react-stripe-js": "^6.3.0",
-    "@stripe/stripe-js": "^9.4.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

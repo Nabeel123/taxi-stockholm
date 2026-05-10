@@ -17,7 +17,12 @@ export const contactSubmissionSchema = z.object({
 
 export type ContactSubmission = z.infer<typeof contactSubmissionSchema>;
 
-/** API payload includes optional token from Google reCAPTCHA v2 */
+/** Client analytics hints + optional Google reCAPTCHA token (v2 checkbox or v3 execute) */
 export const contactApiBodySchema = contactSubmissionSchema.extend({
   recaptchaToken: z.string().optional(),
+  locale: z.string().max(24).optional(),
+  pagePath: z.string().max(512).optional(),
+  utmSource: z.string().max(120).optional(),
+  utmMedium: z.string().max(120).optional(),
+  utmCampaign: z.string().max(200).optional(),
 });

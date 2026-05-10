@@ -4,11 +4,17 @@ import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTranslations } from "next-intl";
+import { usePathname } from "@/i18n/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { contactSubmissionSchema, type ContactSubmission } from "@/lib/contact-schema";
 import { COMPANY } from "@/lib/site";
 import { Loader2 } from "lucide-react";
 import type { z } from "zod";
+
+/** v3 scores via `execute()`; v2 uses the “I’m not a robot” checkbox. v3 keys with v2 widgets → “Invalid key type”. */
+const CONTACT_RECAPTCHA_V3_ENABLED =
+  process.env.NEXT_PUBLIC_RECAPTCHA_V3 === "1" ||
+  process.env.NEXT_PUBLIC_RECAPTCHA_V3 === "true";
 
 type ContactFormInput = z.input<typeof contactSubmissionSchema>;
 
@@ -19,6 +25,8 @@ type Props = {
 
 export default function ContactForm({ recaptchaSiteKey }: Props) {
   const t = useTranslations("contactPage");
+  const pathname = usePathname();
+  const locale = useLocale();
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [captchaClientError, setCaptchaClientError] = useState<string | null>(null);
   const [recaptchaReady, setRecaptchaReady] = useState(() => !recaptchaSiteKey);
@@ -26,6 +34,28 @@ export default function ContactForm({ recaptchaSiteKey }: Props) {
   const widgetIdRef = useRef<number | null>(null);
 
   useEffect(() => {
+    if (!recaptchaSiteKey) return;
+    // #region agent log
+    fetch("http://127.0.0.1:7492/ingest/e2288c62-2022-4c78-b877-c0a925005346", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "8f8fe3" },
+      body: JSON.stringify({
+        sessionId: "8f8fe3",
+        hypothesisId: "H1-recaptcha-key-type-integration",
+        location: "ContactForm.tsx:recaptcha-config",
+        message: "Contact reCAPTCHA client integration",
+        data: {
+          integration: CONTACT_RECAPTCHA_V3_ENABLED ? "v3_execute" : "v2_checkbox_render",
+          keyLength: recaptchaSiteKey.length,
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+  }, [recaptchaSiteKey]);
+
+  useEffect(() => {
+    if (CONTACT_RECAPTCHA_V3_ENABLED) return;
     if (!recaptchaSiteKey || !recaptchaReady || !containerRef.current) return;
     if (widgetIdRef.current !== null) return;
     const g = window.grecaptcha;
@@ -69,26 +99,61 @@ export default function ContactForm({ recaptchaSiteKey }: Props) {
 
     let recaptchaToken: string | undefined;
     if (recaptchaSiteKey) {
-      const id = widgetIdRef.current;
-      if (id === null || !window.grecaptcha) {
+      const g = window.grecaptcha;
+      if (!g) {
         setCaptchaClientError(t("captchaNotReady"));
         setStatus("idle");
         return;
       }
-      recaptchaToken = window.grecaptcha.getResponse(id)?.trim() || "";
-      if (!recaptchaToken) {
-        setCaptchaClientError(t("captchaRequired"));
-        setStatus("idle");
-        return;
+      if (CONTACT_RECAPTCHA_V3_ENABLED) {
+        try {
+          await new Promise<void>((resolve) => {
+            g.ready(() => resolve());
+          });
+          recaptchaToken = await g.execute(recaptchaSiteKey, { action: "contact_form" });
+          if (!recaptchaToken?.trim()) {
+            setCaptchaClientError(t("captchaRequired"));
+            setStatus("idle");
+            return;
+          }
+        } catch {
+          setCaptchaClientError(t("captchaVerifyFailed"));
+          setStatus("idle");
+          return;
+        }
+      } else {
+        const id = widgetIdRef.current;
+        if (id === null) {
+          setCaptchaClientError(t("captchaNotReady"));
+          setStatus("idle");
+          return;
+        }
+        recaptchaToken = g.getResponse(id)?.trim() || "";
+        if (!recaptchaToken) {
+          setCaptchaClientError(t("captchaRequired"));
+          setStatus("idle");
+          return;
+        }
       }
     }
 
     try {
+      const qs =
+        typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...values,
+          locale,
+          pagePath: pathname,
+          ...(qs
+            ? {
+                utmSource: qs.get("utm_source") ?? undefined,
+                utmMedium: qs.get("utm_medium") ?? undefined,
+                utmCampaign: qs.get("utm_campaign") ?? undefined,
+              }
+            : {}),
           ...(recaptchaToken ? { recaptchaToken } : {}),
         }),
       });
@@ -125,7 +190,11 @@ export default function ContactForm({ recaptchaSiteKey }: Props) {
     <>
       {recaptchaSiteKey ? (
         <Script
-          src="https://www.google.com/recaptcha/api.js"
+          src={
+            CONTACT_RECAPTCHA_V3_ENABLED
+              ? `https://www.google.com/recaptcha/api.js?render=${encodeURIComponent(recaptchaSiteKey)}`
+              : "https://www.google.com/recaptcha/api.js"
+          }
           strategy="afterInteractive"
           onLoad={() => setRecaptchaReady(true)}
         />
@@ -227,7 +296,7 @@ export default function ContactForm({ recaptchaSiteKey }: Props) {
           ) : null}
         </div>
 
-        {recaptchaSiteKey ? (
+        {recaptchaSiteKey && !CONTACT_RECAPTCHA_V3_ENABLED ? (
           <div className="flex justify-center [&_iframe]:max-w-full">
             <div ref={containerRef} />
           </div>

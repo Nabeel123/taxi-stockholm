@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { contactApiBodySchema, type ContactSubmission } from "@/lib/contact-schema";
+import { buildSubmissionContext } from "@/lib/form-submissions/context";
+import { recordFormSubmission } from "@/lib/form-submissions/record";
+import { FORM_TYPES } from "@/lib/form-submissions/types";
 import { COMPANY } from "@/lib/site";
 
 const CONTACT_INBOX = COMPANY.emails.bookings;
@@ -84,8 +87,21 @@ async function verifyRecaptchaToken(token: string, secretKey: string): Promise<b
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: params.toString(),
     });
-    const payload = (await res.json()) as { success?: boolean };
-    return payload.success === true;
+    const payload = (await res.json()) as {
+      success?: boolean;
+      score?: number;
+      action?: string;
+    };
+    if (payload.success !== true) return false;
+    if (typeof payload.score === "number") {
+      const min = Number.parseFloat(process.env.RECAPTCHA_V3_MIN_SCORE ?? "0.5");
+      const threshold = Number.isFinite(min) ? min : 0.5;
+      if (payload.score < threshold) return false;
+      if (payload.action != null && payload.action !== "" && payload.action !== "contact_form") {
+        return false;
+      }
+    }
+    return true;
   } catch {
     return false;
   }
@@ -104,9 +120,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "validation_error" }, { status: 400 });
   }
 
+  const {
+    recaptchaToken,
+    locale,
+    pagePath,
+    utmSource,
+    utmMedium,
+    utmCampaign,
+    name,
+    email,
+    phone,
+    message,
+  } = parsed.data;
+
   const captchaSecret = process.env.GOOGLE_CAPTCHA_SECRET_KEY?.trim();
   if (captchaSecret) {
-    const token = parsed.data.recaptchaToken?.trim() ?? "";
+    const token = recaptchaToken?.trim() ?? "";
     if (!token) {
       return NextResponse.json({ error: "captcha_required" }, { status: 400 });
     }
@@ -116,12 +145,15 @@ export async function POST(request: Request) {
     }
   }
 
-  const data: ContactSubmission = {
-    name: parsed.data.name,
-    email: parsed.data.email,
-    phone: parsed.data.phone,
-    message: parsed.data.message,
-  };
+  const data: ContactSubmission = { name, email, phone, message };
+
+  const context = buildSubmissionContext(request, {
+    locale,
+    pagePath,
+    utmSource,
+    utmMedium,
+    utmCampaign,
+  });
 
   const resendKey = process.env.RESEND_API_KEY?.trim();
   const resendFrom = process.env.RESEND_CONTACT_FROM?.trim();
@@ -132,6 +164,17 @@ export async function POST(request: Request) {
   if (resendKey && resendFrom) {
     const ok = await sendContactViaResend(data, resendKey, resendFrom);
     if (!ok) {
+      await recordFormSubmission({
+        formType: FORM_TYPES.CONTACT,
+        fields: {
+          name: data.name.trim(),
+          email: data.email.trim(),
+          phone: data.phone ?? null,
+          message: data.message.trim(),
+          delivery: "resend_failed",
+        },
+        context,
+      });
       return NextResponse.json({ error: "delivery_failed" }, { status: 502 });
     }
     delivered = true;
@@ -151,17 +194,57 @@ export async function POST(request: Request) {
       if (!r.ok) {
         console.error("[contact] webhook HTTP", r.status);
         if (!delivered) {
+          await recordFormSubmission({
+            formType: FORM_TYPES.CONTACT,
+            fields: {
+              name: data.name.trim(),
+              email: data.email.trim(),
+              phone: data.phone ?? null,
+              message: data.message.trim(),
+              delivery: "webhook_failed",
+            },
+            context,
+          });
           return NextResponse.json({ error: "delivery_failed" }, { status: 502 });
         }
+      } else {
+        delivered = true;
       }
     } catch (e) {
       console.error("[contact] webhook fetch", e);
       if (!delivered) {
+        await recordFormSubmission({
+          formType: FORM_TYPES.CONTACT,
+          fields: {
+            name: data.name.trim(),
+            email: data.email.trim(),
+            phone: data.phone ?? null,
+            message: data.message.trim(),
+            delivery: "webhook_failed",
+          },
+          context,
+        });
         return NextResponse.json({ error: "delivery_failed" }, { status: 502 });
       }
     }
-    delivered = true;
   }
+
+  await recordFormSubmission({
+    formType: FORM_TYPES.CONTACT,
+    fields: {
+      name: data.name.trim(),
+      email: data.email.trim(),
+      phone: data.phone ?? null,
+      message: data.message.trim(),
+      delivery:
+        delivered
+          ? "ok"
+          : resendKey || webhook
+            ? "skipped"
+            : "no_provider_configured",
+    },
+    context,
+  });
 
   if (!delivered) {
     console.info(`[contact] (no Resend/webhook) → would email ${CONTACT_INBOX}`, JSON.stringify(data));

@@ -15,7 +15,8 @@ export function isStripePaymentsConfigured(): boolean {
 type PaymentFormProps = {
   formId: string;
   returnUrl: string;
-  onPaid: () => void;
+  /** PaymentIntent id when checkout succeeded without redirect (optional). */
+  onPaid: (paymentIntentId: string | null) => void;
   onReady: () => void;
   onBusyChange?: (busy: boolean) => void;
   onBeforeConfirmPayment?: () => void;
@@ -54,7 +55,7 @@ function PaymentForm({
     onBeforeConfirmPaymentRef.current?.();
     inFlightRef.current = true;
     onBusyChangeRef.current?.(true);
-    const { error } = await stripe.confirmPayment({
+    const { error, paymentIntent } = await stripe.confirmPayment({
       elements,
       confirmParams: {
         return_url: returnUrl,
@@ -64,7 +65,7 @@ function PaymentForm({
     inFlightRef.current = false;
     onBusyChangeRef.current?.(false);
     if (!error) {
-      onPaidRef.current();
+      onPaidRef.current(paymentIntent?.id ?? null);
     }
   }
 
@@ -91,7 +92,7 @@ export type StripePaymentSectionProps = {
   formId: string;
   serviceId: string;
   locale: "en" | "sv";
-  onPaid: () => void;
+  onPaid: (paymentIntentId: string | null) => void;
   onConfigurationError?: () => void;
   onReadyChange?: (ready: boolean) => void;
   onBusyChange?: (busy: boolean) => void;
@@ -188,7 +189,7 @@ export function StripePaymentSection({
         <PaymentForm
           formId={formId}
           returnUrl={returnUrl}
-          onPaid={() => onPaidRef.current()}
+          onPaid={(paymentIntentId) => onPaidRef.current(paymentIntentId)}
           onReady={() => onReadyChange?.(true)}
           onBusyChange={onBusyChange}
           onBeforeConfirmPayment={onBeforeConfirmPayment}

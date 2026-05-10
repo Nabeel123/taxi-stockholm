@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { usePathname } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import { Phone, Star } from "lucide-react";
-import type { MastheadContent } from "@/lib/sanity/masthead";
+import type { MastheadContent } from "@/lib/masthead";
 import { COMPANY } from "@/lib/site";
 
 /** Matches `Header` so hash updates after programmatic scroll refresh active nav. */
