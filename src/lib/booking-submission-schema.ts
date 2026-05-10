@@ -29,7 +29,7 @@ export const bookingSubmissionApiSchema = z.object({
   utmMedium: z.string().max(120).optional(),
   utmCampaign: z.string().max(200).optional(),
   clientGeo: bookingClientGeoSchema.optional(),
-  booking: z.record(z.unknown()),
+  booking: z.record(z.string(), z.unknown()),
 });
 
 export type BookingSubmissionApiBody = z.infer<typeof bookingSubmissionApiSchema>;

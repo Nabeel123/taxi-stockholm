@@ -31,7 +31,8 @@ export const metadata: Metadata = {
 export default async function AnalyticsPage() {
   const bookings = await getBookings(2000);
   const kpis = computeKpis(bookings);
-  const series30 = dailySeries(bookings, 30);
+  /* 14 past + today + 15 upcoming days, bucketed by pickup date so scheduled rides are visible. */
+  const series30 = dailySeries(bookings, { pastDays: 14, futureDays: 15 });
   const serviceData = serviceBreakdown(bookings);
   const hours = peakHours(bookings);
   const distance = distanceHistogram(bookings);
@@ -49,12 +50,14 @@ export default async function AnalyticsPage() {
         <KpiCard
           label="30-day revenue"
           value={formatCurrency(series30.reduce((s, p) => s + p.revenue, 0), kpis.currency)}
+          hint="Past 14d + next 15d"
           accent="success"
           icon={<BadgeDollar />}
         />
         <KpiCard
           label="30-day trips"
           value={formatNumber(series30.reduce((s, p) => s + p.trips, 0))}
+          hint="Past 14d + next 15d"
           accent="brand"
           icon={<CarIcon />}
         />
@@ -76,7 +79,7 @@ export default async function AnalyticsPage() {
         <SectionCard
           className="xl:col-span-2"
           title="Revenue per day"
-          description="Paid revenue across the trailing 30 days."
+          description="Past 14 days, today and the next 15 — committed revenue from upcoming paid bookings is shown ahead of today."
         >
           {series30.length > 0 ? (
             <RevenueAreaChart data={series30} currency={kpis.currency} />
@@ -95,7 +98,7 @@ export default async function AnalyticsPage() {
       </section>
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <SectionCard title="Trips per day" description="Booking volume across the last 30 days.">
+        <SectionCard title="Trips per day" description="Booking volume by pickup date — past 14 days through the next 15.">
           <TripsBarChart data={series30} />
         </SectionCard>
 

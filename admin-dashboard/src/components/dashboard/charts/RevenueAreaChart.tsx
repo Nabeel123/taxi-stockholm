@@ -22,6 +22,8 @@ export function RevenueAreaChart({ data, currency = "SEK", height = 280 }: Reven
     const categories = data.map((p) => p.date);
     const revenue = data.map((p) => Math.round(p.revenue));
     const trips = data.map((p) => p.trips);
+    /* Find the first future bucket so we can drop a "today" guideline at that boundary. */
+    const todayBoundary = data.find((p) => p.isFuture)?.date;
 
     const opts: ApexOptions = {
       chart: {
@@ -50,6 +52,23 @@ export function RevenueAreaChart({ data, currency = "SEK", height = 280 }: Reven
         axisTicks: { show: false },
         labels: { style: { colors: "#94a3b8" } },
       },
+      annotations: todayBoundary
+        ? {
+            xaxis: [
+              {
+                x: new Date(todayBoundary).getTime(),
+                strokeDashArray: 4,
+                borderColor: "#94a3b8",
+                label: {
+                  text: "Today",
+                  borderColor: "#94a3b8",
+                  style: { color: "#fff", background: "#94a3b8", fontSize: "10px" },
+                  orientation: "horizontal",
+                },
+              },
+            ],
+          }
+        : undefined,
       yaxis: [
         {
           labels: {

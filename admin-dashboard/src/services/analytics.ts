@@ -77,25 +77,53 @@ export interface DailySeriesPoint {
   date: string;
   revenue: number;
   trips: number;
+  /** True for buckets that fall on/after today — useful for chart annotations. */
+  isFuture: boolean;
 }
 
-/** Daily revenue + trip volume for a trailing window (default 30d). */
-export function dailySeries(bookings: readonly Booking[], days = 30): DailySeriesPoint[] {
-  const map = new Map<string, DailySeriesPoint>();
-  const now = new Date();
-  const start = new Date(now);
-  start.setHours(0, 0, 0, 0);
-  start.setDate(start.getDate() - (days - 1));
+export interface DailySeriesOptions {
+  /** Number of historical days before today to include. */
+  pastDays?: number;
+  /** Number of upcoming days after today to include (lets the chart show upcoming trips). */
+  futureDays?: number;
+}
 
-  for (let i = 0; i < days; i += 1) {
+/**
+ * Daily revenue + trip volume bucketed by the trip date (`pickupAt`), not when the
+ * booking was placed. This keeps upcoming/scheduled rides visible in the chart so
+ * dispatch can see committed revenue and demand for the days ahead.
+ *
+ * Cancelled bookings are excluded — they don't represent operational activity.
+ */
+export function dailySeries(
+  bookings: readonly Booking[],
+  options: number | DailySeriesOptions = {},
+): DailySeriesPoint[] {
+  /* Backward-compat: a bare number was previously interpreted as `days` (past-only). */
+  const opts: DailySeriesOptions =
+    typeof options === "number" ? { pastDays: options - 1, futureDays: 0 } : options;
+  const pastDays = opts.pastDays ?? 14;
+  const futureDays = opts.futureDays ?? 15;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayKey = dateKey(today);
+
+  const start = new Date(today);
+  start.setDate(today.getDate() - pastDays);
+
+  const map = new Map<string, DailySeriesPoint>();
+  const total = pastDays + 1 + futureDays;
+  for (let i = 0; i < total; i += 1) {
     const d = new Date(start);
     d.setDate(start.getDate() + i);
     const key = dateKey(d);
-    map.set(key, { date: key, revenue: 0, trips: 0 });
+    map.set(key, { date: key, revenue: 0, trips: 0, isFuture: key >= todayKey });
   }
 
   for (const b of bookings) {
-    const key = dateKey(b.createdAt);
+    if (b.status === "cancelled") continue;
+    const key = dateKey(b.pickupAt);
     const slot = map.get(key);
     if (!slot) continue;
     slot.trips += 1;

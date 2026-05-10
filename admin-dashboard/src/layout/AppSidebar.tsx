@@ -12,7 +12,6 @@ import {
   PieChartIcon,
   TableIcon,
   TaskIcon,
-  BellIcon,
   UserCircleIcon,
 } from "../icons/index";
 import SidebarWidget from "./SidebarWidget";
@@ -55,7 +54,6 @@ const NAV_GROUPS: MenuGroup[] = [
     id: "system",
     label: "System",
     items: [
-      { name: "Notifications", icon: <BellIcon />, path: "/notifications" },
       { name: "Account", icon: <UserCircleIcon />, path: "/account" },
     ],
   },

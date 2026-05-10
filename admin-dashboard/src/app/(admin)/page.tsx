@@ -38,7 +38,8 @@ export const metadata: Metadata = {
 export default async function OverviewPage() {
   const bookings = await getBookings(500);
   const kpis = computeKpis(bookings);
-  const series = dailySeries(bookings, 30);
+  /* 14 past + today + 15 upcoming days so committed revenue & demand for the days ahead are visible. */
+  const series = dailySeries(bookings, { pastDays: 14, futureDays: 15 });
   const serviceData = serviceBreakdown(bookings);
   const upcoming = upcomingBookings(bookings, 5);
   const recent = bookings.slice(0, 8);
@@ -131,8 +132,8 @@ export default async function OverviewPage() {
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <SectionCard
           className="xl:col-span-2"
-          title="Revenue & trips · last 30 days"
-          description="Daily paid revenue compared with trip volume."
+          title="Revenue & trips · 30-day window"
+          description="Past 14 days, today and the next 15 days — bucketed by pickup date so upcoming bookings are visible."
         >
           {series.length > 0 ? (
             <RevenueAreaChart data={series} currency={kpis.currency} />

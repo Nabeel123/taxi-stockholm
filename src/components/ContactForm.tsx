@@ -13,6 +13,21 @@ import type { z } from "zod";
 
 type ContactFormInput = z.input<typeof contactSubmissionSchema>;
 
+type SubmitErrorKind = "generic" | "deliveryFailed" | "validationError" | "invalidJson" | "network";
+
+function submitErrorKindFromApi(code: string | undefined): SubmitErrorKind {
+  switch (code) {
+    case "delivery_failed":
+      return "deliveryFailed";
+    case "validation_error":
+      return "validationError";
+    case "invalid_json":
+      return "invalidJson";
+    default:
+      return "generic";
+  }
+}
+
 type Props = {
   /** From `GOOGLE_CAPTCHA_SITE_KEY` (server-passed); if missing, CAPTCHA widget is omitted and API skips verification when secret is unset. */
   recaptchaSiteKey: string | null;
@@ -25,6 +40,7 @@ export default function ContactForm({ recaptchaSiteKey, recaptchaUseV3 }: Props)
   const pathname = usePathname();
   const locale = useLocale();
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [submitErrorKind, setSubmitErrorKind] = useState<SubmitErrorKind | null>(null);
   const [captchaClientError, setCaptchaClientError] = useState<string | null>(null);
   const [recaptchaReady, setRecaptchaReady] = useState(() => !recaptchaSiteKey);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -72,6 +88,7 @@ export default function ContactForm({ recaptchaSiteKey, recaptchaUseV3 }: Props)
 
   const onSubmit = async (values: ContactSubmission) => {
     setCaptchaClientError(null);
+    setSubmitErrorKind(null);
     setStatus("loading");
 
     let recaptchaToken: string | undefined;
@@ -143,11 +160,14 @@ export default function ContactForm({ recaptchaSiteKey, recaptchaUseV3 }: Props)
       }
 
       if (!res.ok) {
-        setStatus("error");
         if (payload.error === "captcha_required" || payload.error === "captcha_invalid") {
           setCaptchaClientError(t("captchaVerifyFailed"));
           resetCaptcha();
+          setStatus("idle");
+          return;
         }
+        setSubmitErrorKind(submitErrorKindFromApi(payload.error));
+        setStatus("error");
         return;
       }
 
@@ -155,6 +175,7 @@ export default function ContactForm({ recaptchaSiteKey, recaptchaUseV3 }: Props)
       setStatus("success");
       reset();
     } catch {
+      setSubmitErrorKind("network");
       setStatus("error");
       resetCaptcha();
     }

@@ -440,7 +440,13 @@
     "successTitle": "Meddelandet har skickats",
     "successBody": "Tack — vi har tagit emot ditt meddelande.",
     "sendAnother": "Skicka ett nytt meddelande",
-    "errorBanner": "Något gick fel. Försök igen eller mejla oss:",
+    "submitErrors": {
+      "generic": "Något gick fel. Försök igen eller mejla oss:",
+      "deliveryFailed": "Vi kunde inte skicka ditt meddelande via e-post. Försök igen om en stund eller kontakta oss via adressen nedan.",
+      "validationError": "Formuläret godkändes inte. Kontrollera fälten och försök igen.",
+      "invalidJson": "Begäran kunde inte behandlas. Uppdatera sidan och försök igen.",
+      "network": "Vi kunde inte nå servern. Kontrollera din anslutning och försök igen, eller mejla oss nedan."
+    },
     "privacyNote": "Vi använder bara dina uppgifter för att svara på din förfrågan.",
     "captchaRequired": "Bocka i ”Jag är inte en robot” innan du skickar.",
     "captchaNotReady": "Verifieringen laddas fortfarande. Vänta ett ögonblick och försök igen.",
