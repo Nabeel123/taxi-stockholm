@@ -43,6 +43,15 @@ export default function Hero({ content }: HeroProps) {
           className="absolute inset-0 bg-[radial-gradient(ellipse_120%_80%_at_50%_-20%,color-mix(in_oklab,var(--accent)_18%,transparent),transparent_55%)]"
           aria-hidden
         />
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat md:hidden"
+          style={{ backgroundImage: `url(${content.mobilePosterUrl})` }}
+          aria-hidden
+        />
+        <div
+          className="pointer-events-none absolute inset-0 bg-black/40 md:hidden"
+          aria-hidden
+        />
         {isVideo ? (
           <video
             className="absolute inset-0 hidden h-full w-full object-cover object-center md:block"
@@ -51,13 +60,20 @@ export default function Hero({ content }: HeroProps) {
             loop
             playsInline
             preload="metadata"
+            poster={content.posterUrl}
             aria-hidden
           >
             {content.videoUrl ? (
               <source src={content.videoUrl} type="video/mp4" />
             ) : null}
           </video>
-        ) : null}
+        ) : (
+          <div
+            className="absolute inset-0 hidden bg-cover bg-center bg-no-repeat md:block"
+            style={{ backgroundImage: `url(${content.posterUrl})` }}
+            aria-hidden
+          />
+        )}
         <div
           className="absolute inset-0 bg-[var(--dark-slate)]/30"
           aria-hidden

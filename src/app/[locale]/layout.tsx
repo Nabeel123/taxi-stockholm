@@ -5,6 +5,7 @@ import { getMessages, setRequestLocale, getTranslations } from "next-intl/server
 import { Poppins, Roboto } from "next/font/google";
 import Script from "next/script";
 import { routing } from "@/i18n/routing";
+import WhatsAppStickyFab from "@/components/WhatsAppStickyFab";
 
 const GA_MEASUREMENT_ID =
   process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? "G-6TX3DHHXDZ";
@@ -63,9 +64,10 @@ export default async function LocaleLayout({ children, params }: Props) {
   const messages = await getMessages();
 
   return (
-    <html lang={locale === "sv" ? "sv" : "en"}>
+    <html lang={locale === "sv" ? "sv" : "en"} suppressHydrationWarning>
       <body
         className={`${roboto.variable} ${poppins.variable} min-w-0 w-full overflow-x-hidden antialiased`}
+        suppressHydrationWarning
       >
         {GA_MEASUREMENT_ID ? (
           <>
@@ -83,8 +85,9 @@ export default async function LocaleLayout({ children, params }: Props) {
             </Script>
           </>
         ) : null}
-        <NextIntlClientProvider messages={messages}>
+        <NextIntlClientProvider locale={locale} messages={messages}>
           {children}
+          <WhatsAppStickyFab />
         </NextIntlClientProvider>
       </body>
     </html>

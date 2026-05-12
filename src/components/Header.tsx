@@ -3,11 +3,12 @@
 import {
   useState,
   useCallback,
+  useEffect,
+  useMemo,
   useSyncExternalStore,
 } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
@@ -60,21 +61,28 @@ function getLocationHash(): string {
 
 export default function Header() {
   const t = useTranslations("header");
+  const locale = useLocale();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+
   const locationHash = useSyncExternalStore(
     subscribeLocation,
     getLocationHash,
     () => "",
   );
 
-  const navLinks = [
-    { href: "/", label: t("home") },
-    { href: "/#about", label: t("about") },
-    { href: "/#services", label: t("services") },
-    { href: "/#reviews", label: t("reviews") },
-    { href: "/contact", label: t("contact") },
-  ] as const;
+  const navLinks = useMemo(
+    () =>
+      [
+        { href: "/", label: t("home") },
+        { href: "/#about", label: t("about") },
+        { href: "/#services", label: t("services") },
+        { href: "/#reviews", label: t("reviews") },
+        { href: "/contact", label: t("contact") },
+      ] as const,
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- labels only change when locale changes; `t` is not referentially stable
+    [locale],
+  );
 
   const handleNavClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -108,8 +116,32 @@ export default function Header() {
     [pathname],
   );
 
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [mobileMenuOpen]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [mobileMenuOpen]);
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b border-neutral-200/90 bg-white/90 shadow-sm backdrop-blur-md supports-[backdrop-filter]:bg-white/85 pt-[env(safe-area-inset-top,0px)]">
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 bg-white/90 shadow-sm backdrop-blur-md supports-[backdrop-filter]:bg-white/85 pt-[env(safe-area-inset-top,0px)] ${
+        mobileMenuOpen
+          ? "border-b-0 lg:border-b lg:border-neutral-200/90"
+          : "border-b border-neutral-200/90"
+      }`}
+    >
       <div className="relative mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-4 sm:h-16 sm:gap-4 sm:px-6 lg:px-8">
         <Link
           href="/"
@@ -152,7 +184,7 @@ export default function Header() {
           <LanguageSwitcher />
           <Link
             href="/book"
-            className="touch-manipulation rounded-[10px] bg-accent px-3.5 py-2.5 text-[11px] font-bold uppercase leading-none tracking-wide text-black shadow-md transition-all duration-200 ease-out hover:bg-accent-hover hover:shadow-lg sm:text-sm sm:px-5 sm:py-3"
+            className="inline-flex min-w-[6.75rem] touch-manipulation items-center justify-center rounded-[10px] bg-accent px-3.5 py-2.5 text-center text-[11px] font-bold uppercase leading-none tracking-wide text-black shadow-md transition-all duration-200 ease-out hover:bg-accent-hover hover:shadow-lg sm:min-w-[7.75rem] sm:px-5 sm:py-3 sm:text-sm"
           >
             {t("bookNow")}
           </Link>
@@ -168,56 +200,44 @@ export default function Header() {
         </div>
       </div>
 
-      <AnimatePresence>
-        {mobileMenuOpen ? (
-          <>
-            <motion.button
-              key="nav-backdrop"
-              type="button"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              aria-hidden
-              tabIndex={-1}
-              className="fixed inset-x-0 bottom-0 z-40 bg-[color-mix(in_oklab,var(--primary)_42%,transparent)] backdrop-blur-[2px] lg:hidden top-[calc(env(safe-area-inset-top,0px)+3.5rem)] sm:top-[calc(env(safe-area-inset-top,0px)+4rem)]"
-              onClick={() => setMobileMenuOpen(false)}
-            />
-            <motion.div
-              key="nav-panel"
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-              className="relative z-50 lg:hidden"
+      {mobileMenuOpen ? (
+        <>
+          <button
+            type="button"
+            aria-label={t("closeMenu")}
+            className="fixed inset-x-0 bottom-0 z-40 bg-[color-mix(in_oklab,var(--primary)_50%,black)] lg:hidden top-[calc(env(safe-area-inset-top,0px)+3.5rem)] sm:top-[calc(env(safe-area-inset-top,0px)+4rem)]"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <div className="relative z-50 lg:hidden">
+            <nav
+              className="mb-[max(0.5rem,env(safe-area-inset-bottom,0px))] bg-white"
+              aria-label={t("mobileNavAria")}
             >
-              <nav
-                className="mx-3 mb-3 flex flex-col gap-0.5 rounded-2xl border border-neutral-200/90 bg-white p-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] shadow-xl shadow-neutral-900/10"
-                aria-label={t("mobileNavAria")}
-              >
+              <ul className="divide-y divide-neutral-200" role="list">
                 {navLinks.map((link) => {
                   const active = isNavLinkActive(pathname, locationHash, link.href);
                   return (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      onClick={(e) => handleNavClick(e, link.href)}
-                      className={`touch-manipulation rounded-xl border-l-[3px] px-4 py-3.5 font-heading text-[0.9375rem] font-bold uppercase tracking-[0.14em] transition-colors sm:text-sm ${
-                        active
-                          ? "border-primary bg-neutral-100 text-primary"
-                          : "border-transparent text-neutral-600 hover:bg-neutral-50 active:bg-neutral-100"
-                      }`}
-                      aria-current={active ? "page" : undefined}
-                    >
-                      {link.label}
-                    </Link>
+                    <li key={link.href} className="list-none">
+                      <Link
+                        href={link.href}
+                        onClick={(e) => handleNavClick(e, link.href)}
+                        className={`block touch-manipulation px-4 py-3.5 text-left font-heading text-[0.9375rem] font-semibold ${
+                          active
+                            ? "bg-neutral-100 text-primary"
+                            : "text-neutral-800"
+                        }`}
+                        aria-current={active ? "page" : undefined}
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
                   );
                 })}
-              </nav>
-            </motion.div>
-          </>
-        ) : null}
-      </AnimatePresence>
+              </ul>
+            </nav>
+          </div>
+        </>
+      ) : null}
     </header>
   );
 }
