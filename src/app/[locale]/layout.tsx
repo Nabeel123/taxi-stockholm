@@ -6,6 +6,7 @@ import { Poppins, Roboto } from "next/font/google";
 import Script from "next/script";
 import { routing } from "@/i18n/routing";
 import WhatsAppStickyFab from "@/components/WhatsAppStickyFab";
+import LocationPermissionPrompt from "@/components/LocationPermissionPrompt";
 import { PWA_THEME_COLOR } from "@/lib/pwa";
 
 const GA_MEASUREMENT_ID =
@@ -96,6 +97,7 @@ export default async function LocaleLayout({ children, params }: Props) {
         ) : null}
         <NextIntlClientProvider locale={locale} messages={messages}>
           {children}
+          <LocationPermissionPrompt />
           <WhatsAppStickyFab />
         </NextIntlClientProvider>
       </body>

@@ -31,6 +31,16 @@
     "switchToEn": "English",
     "label": "Språk"
   },
+  "locationPrompt": {
+    "title": "Använda din plats?",
+    "body": "Tillåt åtkomst när du får frågan så kan vi fylla i hämtningsadress snabbare i bokningsformuläret.",
+    "allow": "Tillåt plats",
+    "notNow": "Inte nu",
+    "busy": "Frågar…",
+    "deniedHint": "Plats är blockerad för den här appen. Du kan slå på det i webbläsaren eller enhetens inställningar för webbplatsen.",
+    "gotIt": "OK",
+    "closeAria": "Stäng"
+  },
   "header": {
     "home": "Hem",
     "about": "Om oss",

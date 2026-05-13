@@ -31,6 +31,16 @@
     "switchToEn": "English",
     "label": "Language"
   },
+  "locationPrompt": {
+    "title": "Use your location?",
+    "body": "Allow access when prompted so we can fill pickup addresses faster in the booking form.",
+    "allow": "Allow location",
+    "notNow": "Not now",
+    "busy": "Requesting…",
+    "deniedHint": "Location is blocked for this app. You can turn it on in your browser or device settings for this site.",
+    "gotIt": "OK",
+    "closeAria": "Dismiss"
+  },
   "header": {
     "home": "Home",
     "about": "About",
