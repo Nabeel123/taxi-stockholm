@@ -1,7 +1,8 @@
 {
   "metadata": {
     "title": "Flygtaxi — Stockholm, Arlanda & Skavsta | Sahotra Services AB",
-    "description": "Fast pris till och från Stockholm, Arlanda (ARN) och Skavsta. Bokning dygnet runt, professionella förare och bekväma, miljövänliga bilar."
+    "description": "Fast pris till och från Stockholm, Arlanda (ARN) och Skavsta. Bokning dygnet runt, professionella förare och bekväma, miljövänliga bilar.",
+    "appName": "Flygtaxi"
   },
   "site": {
     "brandTitle": "Taxi till eller från Stockholm, Arlanda och Skavsta",

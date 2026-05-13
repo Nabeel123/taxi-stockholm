@@ -6,6 +6,7 @@ import { Poppins, Roboto } from "next/font/google";
 import Script from "next/script";
 import { routing } from "@/i18n/routing";
 import WhatsAppStickyFab from "@/components/WhatsAppStickyFab";
+import { PWA_THEME_COLOR } from "@/lib/pwa";
 
 const GA_MEASUREMENT_ID =
   process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? "G-6TX3DHHXDZ";
@@ -38,6 +39,13 @@ export async function generateMetadata({
   return {
     title: t("title"),
     description: t("description"),
+    applicationName: t("appName"),
+    appleWebApp: {
+      capable: true,
+      title: t("appName"),
+      statusBarStyle: "black-translucent",
+    },
+    formatDetection: { telephone: false },
   };
 }
 
@@ -46,6 +54,7 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 5,
   viewportFit: "cover" as const,
+  themeColor: PWA_THEME_COLOR,
 };
 
 type Props = {

@@ -1,7 +1,8 @@
 {
   "metadata": {
     "title": "Airport taxi — Stockholm, Arlanda & Skavsta | Sahotra Services AB",
-    "description": "Fixed-price rides to and from Stockholm, Arlanda (ARN), and Skavsta Airport. 24/7 booking, professional drivers, premium environment-friendly vehicles."
+    "description": "Fixed-price rides to and from Stockholm, Arlanda (ARN), and Skavsta Airport. 24/7 booking, professional drivers, premium environment-friendly vehicles.",
+    "appName": "Airport Taxi"
   },
   "site": {
     "brandTitle": "Taxi to or from Stockholm to Arlanda and Skavsta Airport",
