@@ -77,7 +77,7 @@ export default function CTASection() {
               rel="noopener noreferrer"
               className="inline-flex min-h-12 w-full touch-manipulation items-center justify-center rounded-xl border-2 border-[var(--whatsapp-green)] bg-[var(--whatsapp-green)]/25 px-5 py-3 text-sm font-bold text-white transition hover:bg-[var(--whatsapp-green)]/35 sm:w-auto sm:min-h-11"
             >
-              WhatsApp
+              {t("instantBookingWhatsapp")}
             </a>
           </div>
         </div>
