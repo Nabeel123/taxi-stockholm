@@ -11,7 +11,8 @@ export function googleReviewsInviteUrl(): string {
 }
 
 const facebookUrl =
-  process.env.NEXT_PUBLIC_FACEBOOK_URL ?? "https://www.facebook.com";
+  process.env.NEXT_PUBLIC_FACEBOOK_URL ??
+  "https://www.facebook.com/profile.php?id=61589941940694";
 const instagramUrl =
   process.env.NEXT_PUBLIC_INSTAGRAM_URL ?? "https://www.instagram.com";
 
