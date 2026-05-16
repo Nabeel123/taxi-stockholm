@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { sendBookingNotificationViaResend } from "@/lib/booking-notification-email";
 import { SERVICES } from "@/lib/constants";
 import { buildSubmissionContext } from "@/lib/form-submissions/context";
 import { recordFormSubmission } from "@/lib/form-submissions/record";
 import { FORM_TYPES } from "@/lib/form-submissions/types";
 import { parseBookingSubmissionBody } from "@/lib/booking-submission-schema";
+import { COMPANY } from "@/lib/site";
 
 export const runtime = "nodejs";
 
@@ -126,7 +128,7 @@ export async function POST(request: Request) {
     ...(clientGeo?.timezone ? { timezone: clientGeo.timezone } : {}),
   });
 
-  const fields = {
+  const fieldsBase = {
     completion_kind: completionKind,
     payment_intent_id: paymentIntentId?.trim() ?? null,
     distance_km: distanceKm ?? null,
@@ -134,9 +136,46 @@ export async function POST(request: Request) {
     booking: serializeBooking(booking),
   };
 
+  const resendKey = process.env.RESEND_API_KEY?.trim();
+  const resendFrom = process.env.RESEND_CONTACT_FROM?.trim();
+  const bookingInbox = COMPANY.emails.bookings;
+
+  if (resendKey && resendFrom) {
+    const emailOk = await sendBookingNotificationViaResend(
+      {
+        booking,
+        completionKind,
+        paymentIntentId: paymentIntentId?.trim() ?? null,
+        distanceKm: distanceKm ?? null,
+        packageLabel: service?.priceLabel ?? null,
+        serviceLabel: service?.name ?? booking.serviceType,
+        locale: locale ?? null,
+        pagePath: pagePath ?? null,
+        utmSource: utmSource ?? null,
+        utmMedium: utmMedium ?? null,
+        utmCampaign: utmCampaign ?? null,
+        timezone: clientGeo?.timezone ?? null,
+      },
+      resendKey,
+      resendFrom,
+      bookingInbox,
+    );
+    if (!emailOk) {
+      await recordFormSubmission({
+        formType: FORM_TYPES.BOOKING,
+        fields: { ...fieldsBase, email_delivery: "resend_failed" },
+        context,
+      });
+      return NextResponse.json({ error: "delivery_failed" }, { status: 502 });
+    }
+  }
+
   await recordFormSubmission({
     formType: FORM_TYPES.BOOKING,
-    fields,
+    fields: {
+      ...fieldsBase,
+      email_delivery: resendKey && resendFrom ? "ok" : "skipped_no_resend",
+    },
     context,
   });
 

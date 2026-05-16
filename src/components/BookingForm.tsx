@@ -566,7 +566,16 @@ function BookingFormInner({
               data.pickupDate instanceof Date ? data.pickupDate.toISOString() : data.pickupDate,
           },
         }),
-      }).catch(() => {});
+      })
+        .then(async (res) => {
+          if (!res.ok) {
+            const body = await res.text().catch(() => "");
+            console.error("[booking] submission API error", res.status, body);
+          }
+        })
+        .catch((err) => {
+          console.error("[booking] submission fetch failed", err);
+        });
     },
     [distanceState.distanceKm, locale, pathname],
   );
